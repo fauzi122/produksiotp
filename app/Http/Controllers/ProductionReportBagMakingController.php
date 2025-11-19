@@ -10,7 +10,7 @@ use RealRashid\SweetAlert\Facades\Alert;
 use Browser;
 use Illuminate\Support\Facades\Crypt;
 //use Yajra\DataTables\Facades\Datatables;
-use DataTables; //test test test test 
+use DataTables; //test test test test
 
 // Model
 //START REQUEST SPAREPART AND AUXILIARIES
@@ -51,7 +51,7 @@ class ProductionReportBagMakingController extends Controller
                 ->orderBy('report_sfs.created_at', 'desc')
                 ->get();
 		*/
-		//Audit Log		
+		//Audit Log
 		$username = auth()->user()->email;
 		$ipAddress = $_SERVER['REMOTE_ADDR'];
 		$location = '0';
@@ -123,7 +123,7 @@ class ProductionReportBagMakingController extends Controller
 				if ($data->status == 'Un Posted') {
 					$update = '
 						<a data-bs-toggle="modal" onclick="showUpdateStock(' . $id . ')" data-bs-target="#modal_update_stock" class="btn btn-success waves-effect btn-label waves-light"><i class="bx bx-sync label-icon"></i>  Update Stock</a>
-						
+
 						<!--a href="#" class="btn btn-success waves-effect btn-label waves-light"><i class="bx bx-sync label-icon"></i>  Update Stock</a><br-->
 						<!--p class="mt-2"><code>Result : </code><br>
 						<footer class="blockquote-footer">Good : <cite>20</cite></footer>
@@ -132,7 +132,7 @@ class ProductionReportBagMakingController extends Controller
 						</p-->';
 				} else {
 					$update = '
-						<a data-bs-toggle="modal" onclick="showUpdateStockInfo(' . $id . ')" data-bs-target="#modal_update_stock_info" class="btn btn-info waves-effect btn-label waves-light"><i class="bx bx-info-circle  label-icon"></i>  Stock Updated</a><br>						
+						<a data-bs-toggle="modal" onclick="showUpdateStockInfo(' . $id . ')" data-bs-target="#modal_update_stock_info" class="btn btn-info waves-effect btn-label waves-light"><i class="bx bx-info-circle  label-icon"></i>  Stock Updated</a><br>
 						<a onclick="' . $return_unposted . '" href="/production-entry-report-bag-making-unposted/' . sha1($data->id) . '" class="btn btn-primary waves-effect btn-label waves-light mt-1" onclick="return confirm(' . "'Anda yakin unposted data ?'" . ')">
 							<i class="bx bx-reply label-icon"></i> Un Posted
 						</a>';
@@ -160,14 +160,14 @@ class ProductionReportBagMakingController extends Controller
 							<a target="_blank" href="/production-ent-report-bag-making-print/' . sha1($data->id) . '" class="btn btn-dark waves-effect waves-light">
 								<i class="bx bx-printer" title="Print"></i> PRINT
 							</a>
-						</center>					
+						</center>
 					';
 				} else {
 					$tombol .= '
 							<a target="_blank" href="/production-ent-report-bag-making-print/' . sha1($data->id) . '" class="btn btn-dark waves-effect waves-light">
 								<i class="bx bx-printer" title="Print"></i> PRINT
 							</a>
-						</center>						
+						</center>
 					';
 				}
 
@@ -570,7 +570,7 @@ class ProductionReportBagMakingController extends Controller
 				ProductionEntryReportBagMakingPreparation::create($dataPreparation);
 			}
 
-			//Audit Log		
+			//Audit Log
 			$username = auth()->user()->email;
 			$ipAddress = $_SERVER['REMOTE_ADDR'];
 			$location = '0';
@@ -733,7 +733,7 @@ class ProductionReportBagMakingController extends Controller
 			ProductionEntryReportBagMaking::where('id', $data[0]->id)
 				->update($validatedData);
 
-			//Audit Log		
+			//Audit Log
 			$username = auth()->user()->email;
 			$ipAddress = $_SERVER['REMOTE_ADDR'];
 			$location = '0';
@@ -780,7 +780,7 @@ class ProductionReportBagMakingController extends Controller
 				->where('id_report_bags', $data[0]->id_report_bags)
 				->update($updatedData);
 
-			//Audit Log		
+			//Audit Log
 			$username = auth()->user()->email;
 			$ipAddress = $_SERVER['REMOTE_ADDR'];
 			$location = '0';
@@ -827,7 +827,7 @@ class ProductionReportBagMakingController extends Controller
 				->where('id_report_bags', $data[0]->id_report_bags)
 				->update($updatedData);
 
-			//Audit Log		
+			//Audit Log
 			$username = auth()->user()->email;
 			$ipAddress = $_SERVER['REMOTE_ADDR'];
 			$location = '0';
@@ -891,7 +891,7 @@ class ProductionReportBagMakingController extends Controller
 
 					/*VERSI SEBELUMNYA
 					//CEK KETERSEDIAAN BARCODE
-					$where_query = "a.status IS NULL AND b.id_master_process_productions = '1'";				
+					$where_query = "a.status IS NULL AND b.id_master_process_productions = '1'";
 					$data_barcode = DB::table('barcode_detail as a')
 						->leftJoin('barcodes as b', function($join) {
 							$join->on('a.id_barcode', '=', 'b.id');
@@ -899,11 +899,11 @@ class ProductionReportBagMakingController extends Controller
 						->select('a.*')
 						->whereRaw($where_query)
 						->limit($_POST['wrap'])
-						->get();					
+						->get();
 					//echo count($data_barcode); exit;//baru sampe sini ya..
-					//print_r($data_barcode); exit;				
-					
-					if( count($data_barcode) >= $_POST['wrap']){					
+					//print_r($data_barcode); exit;
+
+					if( count($data_barcode) >= $_POST['wrap']){
 						echo $_POST['wrap']."stok tersedia".count($data_barcode);exit;
 					}else{
 						echo $_POST['wrap']."stok kurang".count($data_barcode);exit;
@@ -1095,7 +1095,7 @@ class ProductionReportBagMakingController extends Controller
 								}
 							}
 
-							//Audit Log		
+							//Audit Log
 							$username = auth()->user()->email;
 							$ipAddress = $_SERVER['REMOTE_ADDR'];
 							$location = '0';
@@ -1302,7 +1302,7 @@ class ProductionReportBagMakingController extends Controller
 				/*
 				//Jika Barcode Bisa Digunakan Lagi, Sesuaikan status data barcode menjadi NULL
 				$updatedData['status'] = 'Un Used';
-				
+
 				DB::table('barcode_detail')
 				->where('barcode_number', $data->barcode)
 				->update($updatedData);
@@ -1360,10 +1360,10 @@ class ProductionReportBagMakingController extends Controller
 					}
 
 					//PENYESUAIAN BARCODE START
-					if ($validatedData['barcode_start'] <> $data[0]->barcode_start) {	   	/*					
+					if ($validatedData['barcode_start'] <> $data[0]->barcode_start) {	   	/*
 						DB::table('barcode_detail')
 						->where('barcode_number', $data[0]->barcode_start)
-						->update(['used_next_shift' => '1', 'join' => '-']);	
+						->update(['used_next_shift' => '1', 'join' => '-']);
 						*/
 
 						//Penyesuaian Barcode Start OLD
@@ -1510,7 +1510,7 @@ class ProductionReportBagMakingController extends Controller
 						}
 					}
 
-					//Audit Log		
+					//Audit Log
 					$username = auth()->user()->email;
 					$ipAddress = $_SERVER['REMOTE_ADDR'];
 					$location = '0';
@@ -1682,7 +1682,7 @@ class ProductionReportBagMakingController extends Controller
 					ProductionEntryReportBagMakingProductionResultDetail::whereRaw("id = '$data_details->id'")->delete();
 				}
 
-				//Audit Log		
+				//Audit Log
 				$username = auth()->user()->email;
 				$ipAddress = $_SERVER['REMOTE_ADDR'];
 				$location = '0';
@@ -1725,7 +1725,7 @@ class ProductionReportBagMakingController extends Controller
 			$response = ProductionEntryReportBagMakingWaste::create($validatedData);
 
 			if (!empty($response)) {
-				//Audit Log		
+				//Audit Log
 				$username = auth()->user()->email;
 				$ipAddress = $_SERVER['REMOTE_ADDR'];
 				$location = '0';
@@ -1785,7 +1785,7 @@ class ProductionReportBagMakingController extends Controller
 				->where('id_report_bags', $data[0]->id_report_bags)
 				->update($validatedData);
 
-			//Audit Log		
+			//Audit Log
 			$username = auth()->user()->email;
 			$ipAddress = $_SERVER['REMOTE_ADDR'];
 			$location = '0';
@@ -1815,7 +1815,7 @@ class ProductionReportBagMakingController extends Controller
 			//echo $delete; exit;
 
 			if ($delete) {
-				//Audit Log		
+				//Audit Log
 				$username = auth()->user()->email;
 				$ipAddress = $_SERVER['REMOTE_ADDR'];
 				$location = '0';
@@ -1864,7 +1864,7 @@ class ProductionReportBagMakingController extends Controller
 			//$data_detail_waste = DB::table('report_blow_wastes')
 			//		->select('report_blow_wastes.*')
 			//		->whereRaw( "sha1(id_report_blows) = '$response_id'")
-			//		->get();      
+			//		->get();
 			$data_detail_production = DB::table('report_bag_production_results as a')
 				->leftJoin('report_sf_production_results as b', 'a.barcode_start', '=', 'b.barcode') //disesuaikan ke table sfs BARCODE NYA HILANG DI TABLE PRODUCTION SESUAIKAN KEMBALI
 				->leftJoin('report_sfs as c', 'a.id_report_sfs', '=', 'c.id') //disesuaikan ke table sfs
@@ -1881,7 +1881,7 @@ class ProductionReportBagMakingController extends Controller
 					->groupBy('a.id')
 					->get();
 			}
-			/*	
+			/*
 			foreach($data_detail_production as $data_for){
 				$data_detail_production['detail_pr'] = ProductionEntryReportBagMakingProductionResultDetail::where('id_report_bag_production_results', $data_for->id)
 				->where('id_report_bags', $data_for->id_report_bags)
@@ -1924,8 +1924,8 @@ class ProductionReportBagMakingController extends Controller
 		$id_rb = $response_id;
 
 		/*QUERY LAMA SEBELUM INSERT BARCODE DENGAN GROUP CONCAT
-		$cek_detail_result = DB::table('report_bag_production_result_details')				
-				->selectRaw('SUM(wrap_pcs) AS sum_wrap_pcs_pr')				
+		$cek_detail_result = DB::table('report_bag_production_result_details')
+				->selectRaw('SUM(wrap_pcs) AS sum_wrap_pcs_pr')
 				->whereRaw( "sha1(id_report_bags) = '$id_rb'")
 				->groupBy('id_report_bags')
 				->get();
@@ -1977,7 +1977,7 @@ class ProductionReportBagMakingController extends Controller
 
 						if ($responseHistory) {
 							$stock_akhir = $data_product[0]->stock + $data_for->amount;
-							//tinggal buatt variabel nya kalo penetrasi weight sumber nya dari weight starting	
+							//tinggal buatt variabel nya kalo penetrasi weight sumber nya dari weight starting
 
 							DB::table('master_product_fgs')->where('id', $order_name[1])->update(array('stock' => $stock_akhir, 'updated_at' => date('Y-m-d H:i:s')));
 						}
@@ -2022,8 +2022,8 @@ class ProductionReportBagMakingController extends Controller
 			->groupBy('report_bag_production_results.note')
 			->get();
 		/*QUERY LAMA SEBELUM INSERT BARCODE DENGAN GROUP CONCAT
-		$cek_detail_result = DB::table('report_bag_production_result_details')				
-				->selectRaw('SUM(wrap_pcs) AS sum_wrap_pcs_pr')				
+		$cek_detail_result = DB::table('report_bag_production_result_details')
+				->selectRaw('SUM(wrap_pcs) AS sum_wrap_pcs_pr')
 				->whereRaw( "sha1(id_report_bags) = '$id_rb'")
 				->groupBy('id_report_bags')
 				->get();
@@ -2058,11 +2058,11 @@ class ProductionReportBagMakingController extends Controller
 							'date' => date("Y-m-d"),
 							'barcode' => $cek_detail_result[0]->barcode,
 							'remarks' => 'Product : '.$data_for->note
-						]);	
+						]);
 						$responseHistory = HistoryStock::create($validatedData);
 						*/
 
-						//if($responseHistory){		
+						//if($responseHistory){
 						$stock_akhir = $data_product[0]->stock - $data_for->amount;
 
 						$responseMaster = DB::table('master_product_fgs')->where('id', $order_name[1])->update(array('stock' => $stock_akhir, 'updated_at' => date('Y-m-d H:i:s')));
@@ -2296,13 +2296,13 @@ class ProductionReportBagMakingController extends Controller
 				/*
 				//SCRIPT UPDATE STATUS BARCODE-Nya
 				$updatedData['status'] = 'In Stock BAG';
-				
+
 				DB::table('barcode_detail')
 				->where('barcode_number', $response->barcode)
 				->update($updatedData);
 				*/
 
-				//Audit Log		
+				//Audit Log
 				$username = auth()->user()->email;
 				$ipAddress = $_SERVER['REMOTE_ADDR'];
 				$location = '0';
@@ -2342,7 +2342,7 @@ class ProductionReportBagMakingController extends Controller
 			//$validatedData['barcode'] = $_POST['id_master_barcode_edit'];
 			$validatedData['keterangan'] = $_POST['keterangan'];
 
-			//unset($validatedData["id_master_barcode_edit"]);			
+			//unset($validatedData["id_master_barcode_edit"]);
 
 			$response = ProductionEntryReportBagMakingProductionResultDetail::where('id', $data[0]->id)
 				->where('id', $data[0]->id)
@@ -2350,18 +2350,18 @@ class ProductionReportBagMakingController extends Controller
 
 			if ($response) {
 				/*
-				$updatedData['status'] = 'In Stock BAG';			
+				$updatedData['status'] = 'In Stock BAG';
 				$response_barcode = DB::table('barcode_detail')
 					->where('barcode_number', $validatedData['barcode'])
 					->update($updatedData);
-				
-				if($validatedData['barcode'] <> $data[0]->barcode){						
+
+				if($validatedData['barcode'] <> $data[0]->barcode){
 					DB::table('barcode_detail')
 					->where('barcode_number', $data[0]->barcode)
-					->update(['status' => null]);					
+					->update(['status' => null]);
 				}
 				*/
-				//Audit Log		
+				//Audit Log
 				$username = auth()->user()->email;
 				$ipAddress = $_SERVER['REMOTE_ADDR'];
 				$location = '0';
@@ -2401,15 +2401,15 @@ class ProductionReportBagMakingController extends Controller
 				if(!empty($barcode)){
 					//Jika Barcode Bisa Digunakan Lagi, Sesuaikan status data barcode menjadi NULL
 					$updatedData['status'] = null;
-					
+
 					//$updatedData['status'] = 'Un Used';
-					
+
 					DB::table('barcode_detail')
 					->where('barcode_number', $barcode)
 					->update($updatedData);
 				}
 				*/
-				//Audit Log		
+				//Audit Log
 				$username = auth()->user()->email;
 				$ipAddress = $_SERVER['REMOTE_ADDR'];
 				$location = '0';

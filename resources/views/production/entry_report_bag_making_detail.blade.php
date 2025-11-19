@@ -129,7 +129,7 @@
 
 									<script>
 										$(document).ready(function(){
-											
+
 											$.ajax({
 												type: "GET",
 												url: "/json_get_customer",
@@ -149,7 +149,7 @@
 													alert(xhr.status + "\n" + xhr.responseText + "\n" + thrownError);
 												}
 											});
-										
+
 											$.ajax({
 												type: "GET",
 												url: "/json_get_work_center",
@@ -167,7 +167,7 @@
 													alert(xhr.status + "\n" + xhr.responseText + "\n" + thrownError);
 												}
 											});
-											
+
 											$.ajax({
 												type: "GET",
 												url: "/json_get_regu",
@@ -186,8 +186,8 @@
 													alert(xhr.status + "\n" + xhr.responseText + "\n" + thrownError);
 												}
 											});
-											
-											$("#id_master_work_centers").change(function(){										
+
+											$("#id_master_work_centers").change(function(){
 												$.ajax({
 													type: "GET",
 													url: "/json_get_regu",
@@ -207,11 +207,11 @@
 													}
 												});
 											});
-											
-											$("#id_master_regus").change(function(){	
+
+											$("#id_master_regus").change(function(){
 												$('#shift').prop('selectedIndex', 0);
 											});
-											
+
 										});
 									</script>
 									<div class="row mb-4 field-wrapper">
@@ -691,9 +691,9 @@
 									<div class="card-header">
 										<h4 class="card-title">Form</h4>
 									</div>
-									<?php 
+									<?php
 										$last = collect($data_detail_production)->last();
-										
+
 										$start = !empty($last) ? $last->start_time : '07:30' ;
 										$finish = !empty($last) ? $last->finish_time : '07:30' ;
 									?>
@@ -766,9 +766,9 @@
 																alert(xhr.status + "\n" + xhr.responseText + "\n" + thrownError);
 															}
 														});
-														
+
 													});
-													
+
 												});
 											</script>
 											<div class="row mb-4 field-wrapper">
@@ -835,9 +835,11 @@
 												<label for="horizontal-firstname-input"
 													class="col-sm-4 col-form-label">Barcode Start</label>
 												<div class="col-sm-8">
-													<select class="form-select data-select2"
-														name="id_master_barcode_start" id="id_master_barcode_start">
-														<option value="">** Please Select A Barcodes</option>
+													<select class="form-select" name="id_master_barcode_start" id="id_master_barcode_start">
+														<option value="">** Please Select A Barcode **</option>
+														@if(!empty($last) && !empty($last->barcode_start))
+															<option value="{{ $last->barcode_start }}" selected>{{ $last->barcode_start }}</option>
+														@endif
 													</select>
 													@if($errors->has('id_master_barcode_start'))
 													<div class="text-danger"><b>{{
@@ -846,48 +848,54 @@
 												</div>
 											</div>
 											<script>
-												$(document).ready(function(){
-													var _data_bag_start = { where : 'BAG START', wo_number : $('#id_work_orders option:selected').attr('data-wo_number') };
-													$.ajax({
-														type: "GET",
-														url: "/json_get_barcode",
-														data: _data_bag_start,
-														dataType: "json",
-														beforeSend: function(e) {
-															if(e && e.overrideMimeType) {
-																e.overrideMimeType("application/json;charset=UTF-8");
-															}
+											$(document).ready(function(){
+												// Inisialisasi Select2 dengan pagination (10 per halaman)
+												$('#id_master_barcode_start').select2({
+													placeholder: '** Please Select A Barcode **',
+													allowClear: true,
+													ajax: {
+														url: '/json_get_barcode',
+														dataType: 'json',
+														delay: 250,
+														data: function(params){
+															return {
+																where: 'BAG START',
+																select2: 1,
+																search: params.term || '',
+																page: params.page || 1
+															};
 														},
-														success: function(response){
-															$("#id_master_barcode_start").html(response.list_barcode).show();
+														processResults: function(data, params){
+															params.page = params.page || 1;
+															return {
+																results: data.results,
+																pagination: { more: data.pagination.more }
+															};
 														},
-														error: function (xhr, ajaxOptions, thrownError) {
-															console.error('Error loading BAG START', xhr, thrownError);
-															alert(xhr.status + "\n" + xhr.responseText + "\n" + thrownError);
-														}
-													});
-													<?php if(!empty($last)){ ?>
-														var _data_bag_start_edit = { where : 'BAG START', wo_number : $('#id_work_orders option:selected').attr('data-wo_number'), barcode_number : {!! "'".$last->barcode_start."'" !!}, page : 'detail' };
-														$.ajax({
-															type: "GET",
-															url: "/json_get_barcode",
-															data: _data_bag_start_edit,
-															dataType: "json",
-															beforeSend: function(e) {
-																if(e && e.overrideMimeType) {
-																	e.overrideMimeType("application/json;charset=UTF-8");
-																}
-															},
-															success: function(response){
-																$("#id_master_barcode_start").html(response.list_barcode).show();
-															},
-															error: function (xhr, ajaxOptions, thrownError) {
-																console.error('Error loading BAG START (edit)', xhr, thrownError);
-																alert(xhr.status + "\n" + xhr.responseText + "\n" + thrownError);
-															}
-														});
-													<?php }; ?>
+														cache: true
+													},
+													minimumInputLength: 0
 												});
+
+												// Re-apply default selected barcode (editing scenario)
+												@if(!empty($last) && !empty($last->barcode_start))
+													setTimeout(function(){
+														var def = {!! json_encode($last->barcode_start) !!};
+														if($('#id_master_barcode_start').find("option[value='"+def+"']").length === 0){
+															var opt = new Option(def, def, true, true);
+															$('#id_master_barcode_start').append(opt).trigger('change');
+														}else{
+															$('#id_master_barcode_start').val(def).trigger('change');
+														}
+													}, 300);
+												@endif
+
+												// Clear saat WO berubah (hanya jika user yang mengubah)
+												$('#id_work_orders').on('change', function(e){
+													if(e && e.originalEvent === undefined){ return; }
+													$('#id_master_barcode_start').val(null).trigger('change');
+												});
+											});
 											</script>
 											<div class="row mb-4 field-wrapper">
 												<label for="horizontal-password-input" class="col-sm-4 col-form-label">
@@ -933,9 +941,12 @@
 												<label for="horizontal-firstname-input"
 													class="col-sm-4 col-form-label">Barcode End</label>
 												<div class="col-sm-8">
-													<select class="form-select data-select2" name="id_master_barcode"
+													<select class="form-select" name="id_master_barcode"
 														id="id_master_barcode">
-														<option value="">** Please Select A Barcodes</option>
+														<option value="">** Please Select A Barcode **</option>
+														@if(!empty($last) && !empty($last->barcode))
+															<option value="{{ $last->barcode }}" selected>{{ $last->barcode }}</option>
+														@endif
 													</select>
 													@if($errors->has('id_master_barcode'))
 													<div class="text-danger"><b>{{ $errors->first('id_master_barcode')
@@ -944,61 +955,59 @@
 												</div>
 											</div>
 											<script>
-												$(document).ready(function(){
-													//$('#id_work_orders').prop('selectedIndex', 0);
-													//$('#id_master_work_centers').prop('selectedIndex', 0);
-													//$('#id_master_regus').prop('selectedIndex', 0);
-													//$('#shift').prop('selectedIndex', 0);
-													$.ajax({
-														type: "GET",
-														url: "/json_get_barcode",
-														data: { 
-															where : 'BAG',
-															barcode_end : '<?php $total = count($data_detail_production); $i = 0; foreach ($data_detail_production as $data_detail){ if($data_detail->used_next_shift_barcode == 0){ $separator = (++$i < $total)?',':''; echo '"'.$data_detail->barcode.'"'.$separator; } } ?>'
+											$(document).ready(function(){
+												console.log('Initializing Barcode END Select2...');
+
+												$('#id_master_barcode').select2({
+													placeholder: '** Please Select A Barcode **',
+													allowClear: true,
+													ajax: {
+														url: '/json_get_barcode',
+														dataType: 'json',
+														delay: 250,
+														data: function(params){
+															console.log('BAG END Request params:', params);
+															var requestData = {
+																where: 'BAG',
+																select2: 1,
+																search: params.term || '',
+																page: params.page || 1
+															};
+															console.log('BAG END Request data:', requestData);
+															return requestData;
 														},
-														dataType: "json",
-														beforeSend: function(e) {
-															if(e && e.overrideMimeType) {
-																e.overrideMimeType("application/json;charset=UTF-8");
-															}
+														processResults: function(data, params){
+															console.log('BAG END Response:', data);
+															params.page = params.page || 1;
+															return {
+																results: data.results,
+																pagination: { more: data.pagination.more }
+															};
 														},
-														success: function(response){
-															$("#id_master_barcode").html(response.list_barcode).show();
-															//$('#id_master_regus').prop('selectedIndex', 0);
-															//$('#shift').prop('selectedIndex', 0);
-														},
-														error: function (xhr, ajaxOptions, thrownError) {
-															alert(xhr.status + "\n" + xhr.responseText + "\n" + thrownError);
-														}
-													});
-													<?php if(!empty($last)){ ?>
-														$.ajax({//baru sampai sini
-															type: "GET",
-															url: "/json_get_barcode",
-															data: { 
-																where : 'BAG',
-																	barcode_end : '<?php $total = count($data_detail_production); $i = 0; foreach ($data_detail_production as $data_detail){ if($data_detail->used_next_shift_barcode == 0){ $separator = (++$i < $total)?',':''; echo '"'.$data_detail->barcode.'"'.$separator; } } ?>',
-																barcode_number : {!! "'".$last->barcode."'" !!},
-																page : 'detail' 
-															},
-															dataType: "json",
-															beforeSend: function(e) {
-																if(e && e.overrideMimeType) {
-																	e.overrideMimeType("application/json;charset=UTF-8");
-																}
-															},
-															success: function(response){
-																$("#id_master_barcode").html(response.list_barcode).show();
-																//$('#id_master_regus').prop('selectedIndex', 0);
-																//$('#shift').prop('selectedIndex', 0);
-															},
-															error: function (xhr, ajaxOptions, thrownError) {
-																alert(xhr.status + "\n" + xhr.responseText + "\n" + thrownError);
-															}
-														});
-													<?php }; ?>
-													
+														cache: true
+													},
+													minimumInputLength: 0
 												});
+
+												// Editing scenario: ensure existing barcode end stays selected
+												@if(!empty($last) && !empty($last->barcode))
+													setTimeout(function(){
+														var defEnd = {!! json_encode($last->barcode) !!};
+														if($('#id_master_barcode').find("option[value='"+defEnd+"']").length === 0){
+															var optEnd = new Option(defEnd, defEnd, true, true);
+															$('#id_master_barcode').append(optEnd).trigger('change');
+														}else{
+															$('#id_master_barcode').val(defEnd).trigger('change');
+														}
+													},300);
+												@endif
+
+												// Clear when work order changes
+												$('#id_work_orders').on('change', function(e){
+													if(e && e.originalEvent === undefined){ return; }
+													$('#id_master_barcode').val(null).trigger('change');
+												});
+											});
 											</script>
 											<div class="row mb-4 field-wrapper">
 												<label for="horizontal-password-input" class="col-sm-4 col-form-label">
@@ -1077,34 +1086,34 @@
 														}else{
 															$amount_result = 0;
 															$pcs_wrap = 0;
-														};													
+														};
 													?>
-													
+
 													document.getElementById('amount_result').value = {{ $amount_result }};
 													document.getElementById('pcs_wrap').value = {{ $pcs_wrap }};
-													
+
 													konten = '<div class="alert alert-dark alert-dismissible alert-label-icon label-arrow fade show" role="alert"><i class="mdi mdi-alert-outline label-icon"></i><font class="text-white">Informasi Tidak Tersedia</font></div>';
 													$( "#div-informasi" ).html( konten );
-													
+
 													<?php if(!empty($last)){ ?>
 														var n_amount = parseFloat(document.getElementById('amount_result').value);
 														var n_pcs_wrap = parseFloat(document.getElementById('pcs_wrap').value);
-														
+
 														var n_pcs_wrap = n_pcs_wrap > n_amount ? n_amount : n_pcs_wrap ;
-														
+
 														var hasil = Math.floor(n_amount/n_pcs_wrap) ;
 														var sisa = n_amount%n_pcs_wrap ;
-														
+
 														var hasil = !isNaN(hasil) ? hasil:0;
 														var sisa = !isNaN(sisa) ? sisa:0;
-														
+
 														var hasil_akhir = sisa > 0 ? hasil + 1 : hasil;
 														var hasil_info = sisa > 0 ? '<strong>'+hasil+'</strong> Bungkus Isi <strong><font>'+n_pcs_wrap+'</font></strong> Pcs<br><strong>1</strong> Bungkus Isi <strong><font>'+sisa+'</font></strong> Pcs':'<strong>'+hasil+'</strong> Bungkus Isi <strong><font>'+n_pcs_wrap+'</font></strong> Pcs';
-														
+
 														konten = '<div class="alert alert-warning alert-dismissible alert-label-icon label-arrow fade show" role="alert"><i class="mdi mdi-alert-outline label-icon"></i>Total :<br><strong><font>'+hasil_akhir+'</font></strong> Bungkus<br><br>Rincian :<br>'+hasil_info+'</div>';
 														$( "#div-informasi" ).html( konten );
 													<?php }; ?>
-													
+
 													/*
 													$("#pcs_wrap").keyup(function() {
 														var n_amount = parseFloat(document.getElementById('amount_result').value);
@@ -1116,43 +1125,43 @@
 													});
 													*/
 													var amount_result = document.getElementById('amount_result');
-											
+
 													amount_result.addEventListener('input', function() {
 														var n_amount = parseFloat(document.getElementById('amount_result').value);
 														var n_pcs_wrap = parseFloat(document.getElementById('pcs_wrap').value);
-														
+
 														var n_pcs_wrap = n_pcs_wrap > n_amount ? n_amount : n_pcs_wrap ;
-														
+
 														var hasil = Math.floor(n_amount/n_pcs_wrap) ;
 														var sisa = n_amount%n_pcs_wrap ;
-														
+
 														var hasil = !isNaN(hasil)?hasil:0;
 														var sisa = !isNaN(sisa)?sisa:0;
-														
+
 														var hasil_akhir = sisa > 0 ? hasil + 1 : hasil;
 														var hasil_info = sisa > 0 ? '<strong>'+hasil+'</strong> Bungkus Isi <strong><font>'+n_pcs_wrap+'</font></strong> Pcs<br><strong>1</strong> Bungkus Isi <strong><font>'+sisa+'</font></strong> Pcs':'<strong>'+hasil+'</strong> Bungkus Isi <strong><font>'+n_pcs_wrap+'</font></strong> Pcs';
-														
+
 														konten = '<div class="alert alert-warning alert-dismissible alert-label-icon label-arrow fade show" role="alert"><i class="mdi mdi-alert-outline label-icon"></i>Total :<br><strong><font>'+hasil_akhir+'</font></strong> Bungkus<br><br>Rincian :<br>'+hasil_info+'</div>';
 														$( "#div-informasi" ).html( konten );
 													});
-													
+
 													var pcs_wrap = document.getElementById('pcs_wrap');
-											
+
 													pcs_wrap.addEventListener('input', function() {
 														var n_amount = parseFloat(document.getElementById('amount_result').value);
 														var n_pcs_wrap = parseFloat(document.getElementById('pcs_wrap').value);
-														
+
 														var n_pcs_wrap = n_pcs_wrap > n_amount ? n_amount : n_pcs_wrap ;
-														
+
 														var hasil = Math.floor(n_amount/n_pcs_wrap) ;
 														var sisa = n_amount%n_pcs_wrap ;
-														
+
 														var hasil = !isNaN(hasil) ? hasil:0;
 														var sisa = !isNaN(sisa) ? sisa:0;
-														
+
 														var hasil_akhir = sisa > 0 ? hasil + 1 : hasil;
 														var hasil_info = sisa > 0 ? '<strong>'+hasil+'</strong> Bungkus Isi <strong><font>'+n_pcs_wrap+'</font></strong> Pcs<br><strong>1</strong> Bungkus Isi <strong><font>'+sisa+'</font></strong> Pcs':'<strong>'+hasil+'</strong> Bungkus Isi <strong><font>'+n_pcs_wrap+'</font></strong> Pcs';
-														
+
 														konten = '<div class="alert alert-warning alert-dismissible alert-label-icon label-arrow fade show" role="alert"><i class="mdi mdi-alert-outline label-icon"></i>Total :<br><strong><font>'+hasil_akhir+'</font></strong> Bungkus<br><br>Rincian :<br>'+hasil_info+'</div>';
 														$( "#div-informasi" ).html( konten );
 													});
@@ -1375,7 +1384,7 @@
 				<div class="card">
 					<div class="card-header">
 						<h4 class="card-title"><i data-feather="check-square"></i> Waste</h4>
-						
+
 					</div>
 					<div class="card-body p-4">
 						<div class="row">
@@ -1383,7 +1392,7 @@
 								<div class="card">
 									<div class="card-header">
 										<h4 class="card-title">Form</h4>
-										
+
 									</div>
 									<div class="card-body p-4">
 										<form method="post" action="/production-entry-report-bag-making-detail-waste-add" class="form-material m-t-40" enctype="multipart/form-data">
@@ -1396,7 +1405,7 @@
 														<div class="text-danger"><b>{{ $errors->first('waste') }}</b></div>
 													@endif
 												</div>
-											</div> 
+											</div>
 											<div class="row mb-4 field-wrapper required-field">
 												<label for="horizontal-firstname-input" class="col-sm-4 col-form-label">Cause Waste </label>
 												<div class="col-sm-8">
@@ -1405,10 +1414,10 @@
 														<div class="text-danger"><b>{{ $errors->first('cause_waste') }}</b></div>
 													@endif
 												</div>
-											</div> 											
-											
+											</div>
+
 											<input type="hidden" class="form-control" name="request_id" value="{{ Request::segment(2) }}">
-											
+
 											<div class="row justify-content-end">
 												<div class="col-sm-12">
 													<div>
@@ -1417,7 +1426,7 @@
 													</div>
 												</div>
 											</div>
-										</form> 
+										</form>
 									</div>
 								</div>
 							</div>
@@ -1425,7 +1434,7 @@
 								<div class="card">
 									<div class="card-header">
 										<h4 class="card-title">Table Detail</h4>
-										
+
 									</div>
 									<div class="card-body p-4">
 										@if(!empty($data_detail_waste[0]))
@@ -1448,23 +1457,23 @@
 															<td>
 																{{ $data_detail->cause_waste }}
 															</td>
-															
-															
-															<td>	
+
+
+															<td>
 																<center>
 																	<form action="/production-entry-report-bag-making-detail-waste-delete" method="post" class="d-inline" enctype="multipart/form-data">
-																		@csrf		
+																		@csrf
 																		<input type="hidden" class="form-control" name="token_rb" value="{{ Request::segment(2) }}">
 																		<button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure to delete this item ?')" value="{{ sha1($data_detail->id) }}" name="hapus_detail">
 																			<i class="bx bx-trash-alt" title="Delete" ></i>
 																		</button>
-																	</form>	
+																	</form>
 																	<a href="/production-entry-report-bag-making-detail-waste-edit/{{ Request::segment(2) }}/{{ sha1($data_detail->id) }}" class="btn btn-info waves-effect waves-light">
 																		<i class="bx bx-edit-alt" title="Edit"></i>
 																	</a>
-																</center>											
+																</center>
 															</td>
-														 
+
 														</tr>
 														@endforeach
 													</tbody>
@@ -1476,19 +1485,19 @@
 													<label>Data Tidak Tersedia</label>
 												</div>
 											</div>
-											
+
 										@endif
 									</div>
 								</div>
 							</div>
 						</div>
-						
-						
+
+
                     </div>
-					
-					
-					
-					
+
+
+
+
 				</div>
 			</div>
 		</div-->
@@ -1518,7 +1527,7 @@
 				"pageLength": 10
 			});
 		}
-		
+
 		// Initialize DataTable for waste table
 		if ($('#datatable-waste').length) {
 			$('#datatable-waste').DataTable({
@@ -1530,13 +1539,13 @@
 				"pageLength": 10
 			});
 		}
-		
+
 		// Ensure delete buttons work properly
 		$('.delete-form').on('submit', function(e) {
 			// Let the browser handle the confirm dialog and submission
 			return true;
 		});
-		
+
 		// Alternative: handle click on delete button directly
 		$('.btn-delete').on('click', function(e) {
 			e.preventDefault();

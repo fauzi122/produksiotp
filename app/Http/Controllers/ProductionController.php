@@ -46,7 +46,7 @@ class ProductionController extends Controller
 			->orderBy('request_tool_auxiliaries.created_at', 'desc')
 			->get();
 
-		//Audit Log		
+		//Audit Log
 		$username = auth()->user()->email;
 		$ipAddress = $_SERVER['REMOTE_ADDR'];
 		$location = '0';
@@ -85,7 +85,7 @@ class ProductionController extends Controller
 						<center>
 							<a onclick="' . $return_approve . '" href="/production-req-sparepart-auxiliaries-approve/' . sha1($data->id) . '" class="btn btn-primary waves-effect waves-light">
 								<i class="bx bx-check" title="Approve"></i> APPROVE
-							</a>							
+							</a>
 							<a onclick="' . $return_delete . '" target="_blank" href="/production-req-sparepart-auxiliaries-delete/' . sha1($data->id) . '" class="btn btn-danger waves-effect waves-light">
 								<i class="bx bx-trash-alt" title="Delete" ></i> DELETE
 							</a>
@@ -99,7 +99,7 @@ class ProductionController extends Controller
 						<center>
 							<a onclick="' . $return_hold . '" href="/production-req-sparepart-auxiliaries-hold/' . sha1($data->id) . '" class="btn btn-secondary waves-effect waves-light">
 								<i class="bx bx-block" title="Hold"></i> HOLD
-							</a>						
+							</a>
 					';
 				} elseif ($data->status == 'Request') {
 					$tombol = '
@@ -109,7 +109,7 @@ class ProductionController extends Controller
 							</a>
 							<a onclick="' . $return_hold . '" href="/production-req-sparepart-auxiliaries-hold/' . sha1($data->id) . '" class="btn btn-secondary waves-effect waves-light">
 								<i class="bx bx-block" title="Hold"></i> HOLD
-							</a>	
+							</a>
 							<a onclick="' . $return_delete . '" target="_blank" href="/production-req-sparepart-auxiliaries-delete/' . sha1($data->id) . '" class="btn btn-danger waves-effect waves-light">
 								<i class="bx bx-trash-alt" title="Delete" ></i> DELETE
 							</a>
@@ -190,7 +190,7 @@ class ProductionController extends Controller
 
 			ProductionReqSparepartAuxiliaries::create($validatedData);
 
-			//Audit Log		
+			//Audit Log
 			$username = auth()->user()->email;
 			$ipAddress = $_SERVER['REMOTE_ADDR'];
 			$location = '0';
@@ -224,7 +224,7 @@ class ProductionController extends Controller
 			ProductionReqSparepartAuxiliaries::whereRaw("sha1(id) = '$response_id'")
 				->update($validatedData);
 
-			//Audit Log		
+			//Audit Log
 			$username = auth()->user()->email;
 			$ipAddress = $_SERVER['REMOTE_ADDR'];
 			$location = '0';
@@ -245,7 +245,7 @@ class ProductionController extends Controller
 			->select('request_tool_auxiliaries.*', 'b.name')
 			->whereRaw("sha1(request_tool_auxiliaries.id) = '$response_id'")
 			->get();
-		/*		
+		/*
 		$data_detail = DB::table('request_tool_auxiliaries_details')
 				->select('*')
 				->whereRaw( "sha1(id_request_tool_auxiliaries) = '$response_id'")
@@ -265,43 +265,43 @@ class ProductionController extends Controller
 				/*
 					foreach($data_detail as $data_for){
 						$id_master_tool_auxiliaries = $data_for->id_master_tool_auxiliaries;
-						
+
 						$data_tool_auxiliaries = DB::table('master_tool_auxiliaries')
 							->select('*')
 							->whereRaw( "id = '".$id_master_tool_auxiliaries."'")
 							->get();
 						//print_r($data_product);exit;
 						if(!empty($data_tool_auxiliaries[0])){
-							
+
 							if($data_for->remarks!=""){
 								$remarks = $data_for->id." | ".$data_for->remarks;//id detail | remarks
 							}else{
 								$remarks = $data_for->id;//id detail
 							}
-							
+
 							$validatedData = ([
 								'id_good_receipt_notes_details' => $data[0]->request_number,
 								'type_product' => 'TA',
 								'id_master_products' => $id_master_tool_auxiliaries,
 								'qty' => $data_for->qty,
-								
+
 								'is_closed' => '1',
 								'type_stock' => 'OUT',
 								'date' => date("Y-m-d"),
 								'barcode' => null,
 								'remarks' => $remarks
-							]);	
+							]);
 							$responseHistory = HistoryStock::create($validatedData);
-								
-							
+
+
 							if($responseHistory){
-								$stock_akhir = $data_tool_auxiliaries[0]->stock - $data_for->qty;		
-								//tinggal buatt variabel nya kalo penetrasi weight sumber nya dari weight starting	
-								
-								DB::table('master_tool_auxiliaries')->where('id', $id_master_tool_auxiliaries)->update(array('stock' => $stock_akhir, 'updated_at' => date('Y-m-d H:i:s'))); 		
+								$stock_akhir = $data_tool_auxiliaries[0]->stock - $data_for->qty;
+								//tinggal buatt variabel nya kalo penetrasi weight sumber nya dari weight starting
+
+								DB::table('master_tool_auxiliaries')->where('id', $id_master_tool_auxiliaries)->update(array('stock' => $stock_akhir, 'updated_at' => date('Y-m-d H:i:s')));
 							}
 					*/
-				//Audit Log		
+				//Audit Log
 				$username = auth()->user()->email;
 				$ipAddress = $_SERVER['REMOTE_ADDR'];
 				$location = '0';
@@ -366,7 +366,7 @@ class ProductionController extends Controller
 				}
 			}
 			//exit;
-			//Audit Log		
+			//Audit Log
 			$username = auth()->user()->email;
 			$ipAddress = $_SERVER['REMOTE_ADDR'];
 			$location = '0';
@@ -439,7 +439,7 @@ class ProductionController extends Controller
 			ProductionReqSparepartAuxiliaries::where('request_number', $data[0]->request_number)
 				->update($validatedData);
 
-			//Audit Log		
+			//Audit Log
 			$username = auth()->user()->email;
 			$ipAddress = $_SERVER['REMOTE_ADDR'];
 			$location = '0';
@@ -521,7 +521,7 @@ class ProductionController extends Controller
 						}
 					}
 
-					//Audit Log		
+					//Audit Log
 					$username = auth()->user()->email;
 					$ipAddress = $_SERVER['REMOTE_ADDR'];
 					$location = '0';
@@ -540,7 +540,7 @@ class ProductionController extends Controller
 		$data['find'] = ProductionReqSparepartAuxiliariesDetail::find($id);
 		$data['ms_tool_auxiliaries'] = DB::select("SELECT master_tool_auxiliaries.description, master_tool_auxiliaries.id FROM master_tool_auxiliaries");
 
-		//Audit Log		
+		//Audit Log
 		$username = auth()->user()->email;
 		$ipAddress = $_SERVER['REMOTE_ADDR'];
 		$location = '0';
@@ -638,7 +638,7 @@ class ProductionController extends Controller
 					}
 				}
 
-				//Audit Log		
+				//Audit Log
 				$username = auth()->user()->email;
 				$ipAddress = $_SERVER['REMOTE_ADDR'];
 				$location = '0';
@@ -677,7 +677,7 @@ class ProductionController extends Controller
 				->delete();
 		}
 
-		//Audit Log		
+		//Audit Log
 		$username = auth()->user()->email;
 		$ipAddress = $_SERVER['REMOTE_ADDR'];
 		$location = '0';
@@ -694,7 +694,7 @@ class ProductionController extends Controller
 			->whereRaw("sha1(request_tool_auxiliaries.id) = '$response_id'")
 			->orderBy('request_tool_auxiliaries.created_at', 'desc')
 			->get();
-		//print_r($data);exit;	
+		//print_r($data);exit;
 		if (!empty($data[0])) {
 			$data_detail = DB::table('request_tool_auxiliaries_details as a')
 				->leftJoin('request_tool_auxiliaries as b', 'a.id_request_tool_auxiliaries', '=', 'b.id')
@@ -712,7 +712,7 @@ class ProductionController extends Controller
 	//START ENTRY MATERIAL USE
 	public function production_entry_material_use()
 	{
-		//Audit Log		
+		//Audit Log
 		$username = auth()->user()->email;
 		$ipAddress = $_SERVER['REMOTE_ADDR'];
 		$location = '0';
@@ -739,7 +739,7 @@ class ProductionController extends Controller
 				if ($data->status == 'Hold') {
 					$tombol = '
 						<center>
-							
+
 							<a data-bs-toggle="modal" onclick="showApprove(' . $id . ')" data-bs-target="#modal_approve" class="btn btn-primary waves-effect waves-light">
 								<i class="bx bx-check" title="Approve"></i>  APPROVE
 							</a>
@@ -755,8 +755,8 @@ class ProductionController extends Controller
 						<center>
 							<!--a onclick="' . $return_hold . '" href="/production-ent-material-use-hold/' . sha1($data->id) . '" class="btn btn-warning waves-effect waves-light">
 								<i class="bx bx-block" title="Hold"></i> HOLD
-							</a-->		
-							
+							</a-->
+
 							<a data-bs-toggle="modal" onclick="showHold(' . $id . ')" data-bs-target="#modal_hold" class="btn btn-warning waves-effect waves-light">
 								<i class="bx bx-block" title="Hold"></i>  HOLD
 							</a>
@@ -766,7 +766,7 @@ class ProductionController extends Controller
 						<a target="_blank" href="/production-ent-material-use-print/' . sha1($data->id) . '" class="btn btn-dark waves-effect waves-light">
 							<i class="bx bx-printer" title="Print"></i> PRINT
 						</a>
-					</center>						
+					</center>
 				';
 				return $tombol;
 			})
@@ -860,7 +860,7 @@ class ProductionController extends Controller
 
 			$response = ProductionEntryMaterialUse::create($validatedData);
 
-			//Audit Log		
+			//Audit Log
 			$username = auth()->user()->email;
 			$ipAddress = $_SERVER['REMOTE_ADDR'];
 			$location = '0';
@@ -997,12 +997,12 @@ class ProductionController extends Controller
 				'shift' => 'required',
 
 			], $pesan);
-			//$validatedData['status'] = 'Hold';			
+			//$validatedData['status'] = 'Hold';
 
 			ProductionEntryMaterialUse::where('id', $data[0]->id)
 				->update($validatedData);
 
-			//Audit Log		
+			//Audit Log
 			$username = auth()->user()->email;
 			$ipAddress = $_SERVER['REMOTE_ADDR'];
 			$location = '0';
@@ -1173,7 +1173,7 @@ class ProductionController extends Controller
 							}
 						}
 
-						//Audit Log		
+						//Audit Log
 						$username = auth()->user()->email;
 						$ipAddress = $_SERVER['REMOTE_ADDR'];
 						$location = '0';
@@ -1253,7 +1253,7 @@ class ProductionController extends Controller
 
 	public function production_entry_material_use_hold($response_id)
 	{
-		//TINGGAL DELETED HISTORY NYA SAJA. 
+		//TINGGAL DELETED HISTORY NYA SAJA.
 		//QUERY UNTUK UPDATE REPORT MATERIAL USES
 		$data = ProductionEntryMaterialUse::leftJoin('work_orders AS b', 'report_material_uses.id_work_orders', '=', 'b.id')
 			->select("report_material_uses.*", "b.id_master_process_productions")
@@ -1302,7 +1302,7 @@ class ProductionController extends Controller
 						if (!empty($get_history)) { //UPDATE INSERT HISTORY
 							HistoryStock::whereRaw("SUBSTRING_INDEX(remarks, '|', '1') = '" . $data[0]->id . "'")->delete();
 
-							//Audit Log		
+							//Audit Log
 							$username = auth()->user()->email;
 							$ipAddress = $_SERVER['REMOTE_ADDR'];
 							$location = '0';
@@ -1350,12 +1350,12 @@ class ProductionController extends Controller
 						->get();
 
 					$stock_akhir = $data_master[0]->stock + $datas->taking;
-					//DB::table('master_raw_materials')->where('id', $datas->id_master_products)->update(array('stock' => $stock_akhir)); 
+					//DB::table('master_raw_materials')->where('id', $datas->id_master_products)->update(array('stock' => $stock_akhir));
 				}
 				ProductionEntryMaterialUse::whereRaw("sha1(id) = '$response_id'")->delete();
 				ProductionEntryMaterialUseDetail::whereRaw("sha1(id_report_material_uses) = '$response_id'")->delete();
 
-				//Audit Log		
+				//Audit Log
 				$username = auth()->user()->email;
 				$ipAddress = $_SERVER['REMOTE_ADDR'];
 				$location = '0';
@@ -1372,51 +1372,51 @@ class ProductionController extends Controller
 		}
 	}
 	/*
-	public function production_entry_material_use_approve_old($response_id){		
+	public function production_entry_material_use_approve_old($response_id){
 		$data = ProductionEntryMaterialUse::leftJoin('work_orders AS b', 'report_material_uses.id_work_orders', '=', 'b.id')
 				->select("report_material_uses.*","b.id_master_process_productions")
 				->whereRaw( "sha1(report_material_uses.id) = '$response_id'")
                 ->get();
-		
+
 		if(!empty($data[0])){
-			$validatedData['status'] = 'Approve';			
-			
+			$validatedData['status'] = 'Approve';
+
 			ProductionEntryMaterialUse::whereRaw( "sha1(id) = '$response_id'" )
 				->update($validatedData);
-			
-			//Audit Log		
-			$username= auth()->user()->email; 
+
+			//Audit Log
+			$username= auth()->user()->email;
 			$ipAddress=$_SERVER['REMOTE_ADDR'];
 			$location='0';
 			$access_from=Browser::browserName();
 			$activity='Approve Entry Report Material Use ID="'.$data[0]->id.'"';
 			$this->auditLogs($username,$ipAddress,$location,$access_from,$activity);
-			
+
 			return Redirect::to('/production-ent-material-use')->with('pesan', 'Approve Successfuly.');
 		}else{
 			return Redirect::to('/production-ent-material-use')->with('pesan_danger', 'There Is An Error.');
 		}
 	}
-	public function production_entry_material_use_hold_old($response_id){		
+	public function production_entry_material_use_hold_old($response_id){
 		$data = ProductionEntryMaterialUse::leftJoin('work_orders AS b', 'report_material_uses.id_work_orders', '=', 'b.id')
 				->select("report_material_uses.*","b.id_master_process_productions")
 				->whereRaw( "sha1(report_material_uses.id) = '$response_id'")
                 ->get();
-		
+
 		if(!empty($data[0])){
-			$validatedData['status'] = 'Hold';			
-			
+			$validatedData['status'] = 'Hold';
+
 			ProductionEntryMaterialUse::whereRaw( "sha1(id) = '$response_id'" )
 				->update($validatedData);
-			
-			//Audit Log		
-			$username= auth()->user()->email; 
+
+			//Audit Log
+			$username= auth()->user()->email;
 			$ipAddress=$_SERVER['REMOTE_ADDR'];
 			$location='0';
 			$access_from=Browser::browserName();
 			$activity='Hold Entry Report Material Use ID="'.$data[0]->id.'"';
 			$this->auditLogs($username,$ipAddress,$location,$access_from,$activity);
-			
+
 			return Redirect::to('/production-ent-material-use')->with('pesan', 'Hold Successfuly.');
 		}else{
 			return Redirect::to('/production-ent-material-use')->with('pesan_danger', 'There Is An Error.');
@@ -1427,20 +1427,20 @@ class ProductionController extends Controller
 				->select("report_material_uses.*","b.id_master_process_productions")
 				->whereRaw( "sha1(report_material_uses.id) = '$response_id'")
                 ->get();
-		
+
 		if(!empty($data[0])){
-			
+
 			ProductionEntryMaterialUse::whereRaw( "sha1(id) = '$response_id'" )->delete();
 			ProductionEntryMaterialUseDetail::whereRaw( "sha1(id_report_material_uses) = '$response_id'" )->delete();
-		
-			//Audit Log		
-			$username= auth()->user()->email; 
+
+			//Audit Log
+			$username= auth()->user()->email;
 			$ipAddress=$_SERVER['REMOTE_ADDR'];
 			$location='0';
 			$access_from=Browser::browserName();
 			$activity='Delete Entry Report Material Use ID="'.$data[0]->id.'"';
 			$this->auditLogs($username,$ipAddress,$location,$access_from,$activity);
-			
+
 			return Redirect::to('/production-ent-material-use')->with('pesan', 'Delete Successfuly.');
 		}else{
 			return Redirect::to('/production-ent-material-use')->with('pesan_danger', 'There Is An Error.');
@@ -1520,7 +1520,7 @@ class ProductionController extends Controller
 					->update($update_qty);
 			}
 
-			//Audit Log		
+			//Audit Log
 			$username = auth()->user()->email;
 			$ipAddress = $_SERVER['REMOTE_ADDR'];
 			$location = '0';
@@ -1597,7 +1597,7 @@ class ProductionController extends Controller
 			ProductionEntryMaterialUseDetail::where('id', $data[0]->id)
 				->update($validatedData);
 
-			//Audit Log		
+			//Audit Log
 			$username = auth()->user()->email;
 			$ipAddress = $_SERVER['REMOTE_ADDR'];
 			$location = '0';
@@ -1629,7 +1629,7 @@ class ProductionController extends Controller
 
 		//print_r($data[0]); exit;
 		//print_r($data_detail_grn_detail[0]); exit;
-		//echo $data_detail_grn_detail[0]->qty_out; exit;	
+		//echo $data_detail_grn_detail[0]->qty_out; exit;
 
 		if (!empty($data[0] && $data_detail_grn_detail[0])) {
 
@@ -1643,7 +1643,7 @@ class ProductionController extends Controller
 					->where("id", "=", $data[0]->id_detail_good_receipt_note_details)
 					->update($update_qty);
 
-				//Audit Log		
+				//Audit Log
 				$username = auth()->user()->email;
 				$ipAddress = $_SERVER['REMOTE_ADDR'];
 				$location = '0';
@@ -1669,7 +1669,7 @@ class ProductionController extends Controller
 			->orderBy('report_blows.created_at', 'desc')
 			->get();
 
-		//Audit Log		
+		//Audit Log
 		$username = auth()->user()->email;
 		$ipAddress = $_SERVER['REMOTE_ADDR'];
 		$location = '0';
@@ -1742,7 +1742,7 @@ class ProductionController extends Controller
 				if ($data->status == 'Un Posted') {
 					$update = '
 						<a data-bs-toggle="modal" onclick="showUpdateStock(' . $id . ')" data-bs-target="#modal_update_stock" class="btn btn-success waves-effect btn-label waves-light"><i class="bx bx-sync label-icon"></i>  Update Stock</a>
-						
+
 						<!--a href="#" class="btn btn-success waves-effect btn-label waves-light"><i class="bx bx-sync label-icon"></i>  Update Stock</a><br-->
 						<!--p class="mt-2"><code>Result : </code><br>
 						<footer class="blockquote-footer">Good : <cite>20</cite></footer>
@@ -1752,7 +1752,7 @@ class ProductionController extends Controller
 				} else {
 					if (count($order_name) > 1) {
 						$update = '
-							<a data-bs-toggle="modal" onclick="showUpdateStockInfo(' . $id . ')" data-bs-target="#modal_update_stock_info" class="btn btn-info waves-effect btn-label waves-light"><i class="bx bx-info-circle  label-icon"></i>  Stock Updated</a><br>						
+							<a data-bs-toggle="modal" onclick="showUpdateStockInfo(' . $id . ')" data-bs-target="#modal_update_stock_info" class="btn btn-info waves-effect btn-label waves-light"><i class="bx bx-info-circle  label-icon"></i>  Stock Updated</a><br>
 							<a onclick="' . $return_unposted . '" href="/production-entry-report-blow-unposted/' . sha1($data->id) . '" class="btn btn-primary waves-effect btn-label waves-light mt-1" onclick="return confirm(' . "'Anda yakin unposted data ?'" . ')">
 								<i class="bx bx-reply label-icon"></i> Un Posted
 							</a>
@@ -1791,18 +1791,18 @@ class ProductionController extends Controller
 							<a onclick="' . $return_delete . '" href="/production-ent-report-blow-delete/' . sha1($data->id) . '" class="btn btn-outline-danger waves-effect waves-light" onclick="return confirm(' . "'Anda yakin mau menghapus item ini ?'" . ')">
 								<i class="bx bx-trash-alt" title="Delete" ></i> DELETE
 							</a>
-							
+
 							<a target="_blank" href="/production-ent-report-blow-print/' . sha1($data->id) . '" class="btn btn-dark waves-effect waves-light">
 								<i class="bx bx-printer" title="Print"></i> PRINT
 							</a>
-						</center>					
+						</center>
 					';
 				} else {
 					$tombol .= '
 							<a target="_blank" href="/production-ent-report-blow-print/' . sha1($data->id) . '" class="btn btn-dark waves-effect waves-light">
 								<i class="bx bx-printer" title="Print"></i> PRINT
 							</a>
-						</center>						
+						</center>
 					';
 				}
 
@@ -1947,7 +1947,7 @@ class ProductionController extends Controller
 			->groupBy('id_report_blows')
 			->get();
 
-		//print_r($data);exit;	
+		//print_r($data);exit;
 
 		if (!empty($data[0]->id_report_blows)) {
 		?>
@@ -2207,14 +2207,14 @@ class ProductionController extends Controller
 		if($type_product=='FGWIP'){
 			$table1 = 'master_product_fgs AS a';
 			$table2 = 'master_wips AS a';
-			
+
 			$data1 = DB::table($table1)
 				->select('a.thickness', 'a.width', 'a.height', 'a.id', 'a.perforasi', 'a.description')
 				->selectRaw("'FG' AS type_product");
 			$data2 = DB::table($table2)
 				->select('a.thickness', 'a.width', 'a.length AS height', 'a.id', 'a.perforasi', 'a.description')
 				->selectRaw("'WIP' AS type_product");
-			
+
 			$datas = $data1->union($data2)->get();
 		}
 		*/
@@ -2264,7 +2264,7 @@ class ProductionController extends Controller
 			->get();
 
 		/*
-		$lists = "<option value='' disabled='' selected=''>** Please Select A Product</option>";		
+		$lists = "<option value='' disabled='' selected=''>** Please Select A Product</option>";
 		foreach($datas as $data){
 			$ukuran = $type_product=="FG"?$data->thickness." x ".$data->width." x ".$data->height:$data->thickness." x ".$data->width." x ".$data->length;
 			$selected = $data->id==$id_master_products?'selected':'';
@@ -2540,6 +2540,62 @@ class ProductionController extends Controller
 				}
 
 			case 'BAG START': {
+					// Early Select2 optimization: avoid building large arrays, return 10 rows
+					if (request('select2') == '1') {
+						$pageNum    = (int) (request('page') ?? 1);
+						$perPage    = 10;
+						$offset     = ($pageNum - 1) * $perPage;
+						// Support both 'term' (Select2 default) and legacy 'search'
+						$searchTerm = trim((string) (request('term') ?? request('search') ?? ''));
+
+						// Base: Slitting closed, status FG/FLD, used_next_shift = '1'
+						$query = DB::table('barcode_detail as a')
+							->select('a.id', 'a.barcode_number')
+							->join('report_sf_production_results as d', 'd.barcode', '=', 'a.barcode_number')
+							->join('report_sfs as e', 'e.id', '=', 'd.id_report_sfs')
+							->where('d.type_result', 'Slitting')
+							->where('e.status', 'Closed')
+							->whereIn('a.status', ['In Stock SLT FG', 'In Stock FLD'])
+							->where('a.used_next_shift', '1');
+
+						// Exclude latest used_next_shift = '0'
+						$query->whereNotExists(function ($sub) {
+							$sub->select(DB::raw(1))
+								->from('report_bag_production_results as r')
+								->whereRaw('r.barcode_start = a.barcode_number')
+								->where('r.used_next_shift', '0')
+								->whereRaw('r.id = (SELECT MAX(r2.id) FROM report_bag_production_results r2 WHERE r2.barcode_start = a.barcode_number)');
+						});
+
+						if ($searchTerm !== '') {
+							$query->where('a.barcode_number', 'like', "%{$searchTerm}%");
+						}
+						if ($key !== '') {
+							$query->where(function ($qb) use ($key) {
+								$qb->where('a.barcode_number', $key)->orWhere('a.barcode_number', 'like', $key . '%');
+							});
+						}
+
+						$rows = $query->orderBy('a.id', 'desc')
+							->offset($offset)
+							->limit($perPage + 1)
+							->get();
+
+						$hasMore = $rows->count() > $perPage;
+						if ($hasMore) {
+							$rows = $rows->take($perPage);
+						}
+
+						$data = [];
+						foreach ($rows as $r) {
+							$data[] = ['id' => $r->barcode_number, 'text' => $r->barcode_number];
+						}
+
+						return response()->json([
+							'results' => $data,
+							'pagination' => ['more' => $hasMore]
+						]);
+					}
 					$attempt = 50000;
 
 					// OPTIMIZED: Use whereIn/whereNotIn instead of whereExists for better performance
@@ -2632,12 +2688,64 @@ class ProductionController extends Controller
 				}
 
 			case 'BAG': {
-					$q->join('barcodes as b', 'a.id_barcode', '=', 'b.id')
-						->whereNull('a.status')
-						->where('a.used_next_shift', '1')
-						->where('b.id_master_process_productions', 1);
+					// Early Select2 branch for BAG END: 10 rows per page, same pattern as BAG START
+					if (request('select2') == '1') {
+						$pageNum    = (int) (request('page') ?? 1);
+						$perPage    = 10;
+						$offset     = ($pageNum - 1) * $perPage;
+						// Support both 'term' (Select2 default) and legacy 'search'
+						$searchTerm = trim((string) (request('term') ?? request('search') ?? ''));
 
-					// Exclude barcode yang sudah ada di tabel detail dengan shift end = 'no'
+						// Base query: barcode_detail with id_master_process_productions=1, used_next_shift='1'
+						// Remove whereNull('a.status') to allow existing stock statuses
+						$query = DB::table('barcode_detail as a')
+							->select('a.id', 'a.barcode_number')
+							->join('barcodes as b', 'a.id_barcode', '=', 'b.id')
+							->where('a.used_next_shift', '1')
+							->where('b.id_master_process_productions', 1);
+
+						// Exclude barcodes whose latest bag production result has used_next_shift_end = '0'
+						$query->whereNotExists(function ($sub) {
+							$sub->select(DB::raw(1))
+								->from('report_bag_production_results as r')
+								->whereRaw('r.barcode = a.barcode_number')
+								->where('r.used_next_shift_end', '0')
+								->whereRaw('r.id = (SELECT MAX(r2.id) FROM report_bag_production_results r2 WHERE r2.barcode = a.barcode_number)');
+						});
+
+						if ($searchTerm !== '') {
+							$query->where('a.barcode_number', 'like', "%{$searchTerm}%");
+						}
+						if ($key !== '') {
+							$query->where(function ($qb) use ($key) {
+								$qb->where('a.barcode_number', $key)->orWhere('a.barcode_number', 'like', $key . '%');
+							});
+						}
+
+						$rows = $query->orderBy('a.id', 'desc')
+							->offset($offset)
+							->limit($perPage + 1)
+							->get();
+
+						$hasMore = $rows->count() > $perPage;
+						if ($hasMore) {
+							$rows = $rows->take($perPage);
+						}
+
+						$data = [];
+						foreach ($rows as $r) {
+							$data[] = ['id' => $r->barcode_number, 'text' => $r->barcode_number];
+						}
+
+						return response()->json([
+							'results' => $data,
+							'pagination' => ['more' => $hasMore]
+						]);
+					}
+
+					$q->join('barcodes as b', 'a.id_barcode', '=', 'b.id')
+						->where('a.used_next_shift', '1') // BAG END uses used_next_shift
+						->where('b.id_master_process_productions', 1);					// Exclude barcode yang sudah ada di tabel detail dengan shift end = 'no'
 					// Prefer using canonical barcode numbers (from barcode_detail) for exclusion
 					$excludeList = !empty($barcodeEndCanonical) ? $barcodeEndCanonical : $barcodeEndArr;
 					if (!empty($excludeList)) {
@@ -2866,7 +2974,7 @@ class ProductionController extends Controller
 				ProductionEntryReportBlowPreparation::create($dataPreparation);
 			}
 
-			//Audit Log		
+			//Audit Log
 			$username = auth()->user()->email;
 			$ipAddress = $_SERVER['REMOTE_ADDR'];
 			$location = '0';
@@ -2893,11 +3001,11 @@ class ProductionController extends Controller
 							//->where( "id_master_process_productions" , "=", $data[0]->id_master_process_productions)
 							->where('id_master_process_productions', '2')
 							->select('work_center_code','work_center','id')
-							->get();	
+							->get();
 			$ms_regus = DB::table('master_regus')
 							->where( "id" , "=", $data[0]->id_master_regus)
 							->select('id', 'regu')
-							->get();	
+							->get();
 			*/
 			if ($data[0]->status == "Un Posted") {
 				if (count($order_name) > 1) {
@@ -3015,7 +3123,7 @@ class ProductionController extends Controller
 			ProductionEntryReportBlow::where('id', $data[0]->id)
 				->update($validatedData);
 
-			//Audit Log		
+			//Audit Log
 			$username = auth()->user()->email;
 			$ipAddress = $_SERVER['REMOTE_ADDR'];
 			$location = '0';
@@ -3065,7 +3173,7 @@ class ProductionController extends Controller
 				->where('id_report_blows', $data[0]->id_report_blows)
 				->update($updatedData);
 
-			//Audit Log		
+			//Audit Log
 			$username = auth()->user()->email;
 			$ipAddress = $_SERVER['REMOTE_ADDR'];
 			$location = '0';
@@ -3112,7 +3220,7 @@ class ProductionController extends Controller
 				->where('id_report_blows', $data[0]->id_report_blows)
 				->update($updatedData);
 
-			//Audit Log		
+			//Audit Log
 			$username = auth()->user()->email;
 			$ipAddress = $_SERVER['REMOTE_ADDR'];
 			$location = '0';
@@ -3132,7 +3240,7 @@ class ProductionController extends Controller
 			->whereRaw("sha1(id) = '$response_id'")
 			->get();
 
-		//Audit Log		
+		//Audit Log
 		$username = auth()->user()->email;
 		$ipAddress = $_SERVER['REMOTE_ADDR'];
 		$location = '0';
@@ -3164,7 +3272,7 @@ class ProductionController extends Controller
 						<a target="_blank" href="/production-ent-material-use-print/' . sha1($data->id) . '" class="btn btn-dark waves-effect waves-light">
 							<i class="bx bx-printer" title="Print"></i> PRINT
 						</a>
-					</center>						
+					</center>
 				';
 				return $tombol;
 			})
@@ -3223,7 +3331,7 @@ class ProductionController extends Controller
 					->where('barcode_number', $response->barcode)
 					->update($updatedData);
 
-				//Audit Log		
+				//Audit Log
 				$username = auth()->user()->email;
 				$ipAddress = $_SERVER['REMOTE_ADDR'];
 				$location = '0';
@@ -3320,7 +3428,7 @@ class ProductionController extends Controller
 						->update(['status' => null]);
 				}
 
-				//Audit Log		
+				//Audit Log
 				$username = auth()->user()->email;
 				$ipAddress = $_SERVER['REMOTE_ADDR'];
 				$location = '0';
@@ -3362,7 +3470,7 @@ class ProductionController extends Controller
 					->update($updatedData);
 
 
-				//Audit Log		
+				//Audit Log
 				$username = auth()->user()->email;
 				$ipAddress = $_SERVER['REMOTE_ADDR'];
 				$location = '0';
@@ -3405,7 +3513,7 @@ class ProductionController extends Controller
 			$response = ProductionEntryReportBlowWaste::create($validatedData);
 
 			if (!empty($response)) {
-				//Audit Log		
+				//Audit Log
 				$username = auth()->user()->email;
 				$ipAddress = $_SERVER['REMOTE_ADDR'];
 				$location = '0';
@@ -3465,7 +3573,7 @@ class ProductionController extends Controller
 				->where('id_report_blows', $data[0]->id_report_blows)
 				->update($validatedData);
 
-			//Audit Log		
+			//Audit Log
 			$username = auth()->user()->email;
 			$ipAddress = $_SERVER['REMOTE_ADDR'];
 			$location = '0';
@@ -3495,7 +3603,7 @@ class ProductionController extends Controller
 			//echo $delete; exit;
 
 			if ($delete) {
-				//Audit Log		
+				//Audit Log
 				$username = auth()->user()->email;
 				$ipAddress = $_SERVER['REMOTE_ADDR'];
 				$location = '0';
@@ -3536,7 +3644,7 @@ class ProductionController extends Controller
 							->leftJoin('master_customers AS c', 'b.id_master_customers', '=', 'c.id')
 							->select('a.id_master_process_productions','a.wo_number','a.id','c.id AS id_master_customers')
 							->whereRaw( "left(wo_number,5) = 'WOBGM'")
-							->get();     
+							->get();
 					$ms_known_by = DB::table('master_employees')
 							->select('id','name')
 							->whereRaw( "id_master_bagians IN('3','4')")
@@ -3684,7 +3792,7 @@ class ProductionController extends Controller
 				if ($responseGood or $responseHold or $responseReject) {
 					if ($responseGood) {
 						$stock_akhir = $data_product[0]->stock + $data_update[0]->good; //STOK
-						$weight_akhir = $data_product[0]->weight_stock + $data_update[0]->weight_good; //WEIGTH				
+						$weight_akhir = $data_product[0]->weight_stock + $data_update[0]->weight_good; //WEIGTH
 
 						DB::table('master_wips')->where('id', $order_name[1])->update(array('weight_stock' => $weight_akhir, 'stock' => $stock_akhir, 'updated_at' => date('Y-m-d H:i:s')));
 					}
@@ -3783,12 +3891,12 @@ class ProductionController extends Controller
 							'date' => date("Y-m-d"),
 							'barcode' => $data_update[0]->barcode_good,
 							'remarks' => 'From GOOD Posted'
-						]);	
+						]);
 						$responseGood = HistoryStock::create($validatedData);
 						*/
-						//if($responseGood){					
+						//if($responseGood){
 						$stock_akhir = $data_product[0]->stock - $data_update[0]->good; //STOK
-						$weight_akhir = $data_product[0]->weight_stock - $data_update[0]->weight_good; //WEIGTH						
+						$weight_akhir = $data_product[0]->weight_stock - $data_update[0]->weight_good; //WEIGTH
 
 						$responseMaster = DB::table('master_wips')->where('id', $order_name[1])->update(array('weight_stock' => $weight_akhir, 'stock' => $stock_akhir));
 						//}
@@ -3804,7 +3912,7 @@ class ProductionController extends Controller
 							'date' => date("Y-m-d"),
 							'barcode' => $data_update[0]->barcode_hold,
 							'remarks' => 'From HOLD Posted'
-						]);	
+						]);
 						$responseHold = HistoryStock::create($validatedData);
 					}
 					if($data_update[0]->reject>0){
@@ -3817,7 +3925,7 @@ class ProductionController extends Controller
 							'date' => date("Y-m-d"),
 							'barcode' => $data_update[0]->barcode_reject,
 							'remarks' => 'From REJECT Posted'
-						]);	
+						]);
 						$responseReject = HistoryStock::create($validatedData);
 					}
 					*/
