@@ -1,0 +1,349 @@
+@extends('layouts.master')
+
+@section('konten')
+<div class="page-content">
+    <div class="container-fluid">
+    @csrf
+		
+        <div class="row">
+            <div class="col-12">
+                <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                    <!--h4 class="mb-sm-0 font-size-18"> Add Request Sparepart & Auxiliaries</h4-->
+					<a href="/production-req-sparepart-auxiliaries" class="btn btn-dark waves-effect waves-light mb-3"> 
+					<i class="bx bx-list-ul" title="Back"></i> REQUEST SPAREPART & AUXILIARIES</a>
+                    <div class="page-title-right">
+                        <ol class="breadcrumb m-0">
+                            <li class="breadcrumb-item"><a href="javascript: void(0);">Production</a></li>
+                            <li class="breadcrumb-item active"> Add Request Sparepart & Auxiliaries</li>
+                        </ol>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+		@if (session('pesan'))
+            <div class="alert alert-success alert-dismissible alert-label-icon label-arrow fade show" role="alert">
+                <i class="mdi mdi-check-all label-icon"></i><strong>Success</strong> - {{ session('pesan') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+		@if (session('pesan_danger'))
+            <div class="alert alert-danger alert-dismissible alert-label-icon label-arrow fade show" role="alert">
+                <i class="mdi mdi-alert-octagon-outline label-icon"></i><strong>Dangers</strong> - {{ session('pesan_danger') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+		@if(!empty($data[0]))
+		<?php $request_number = $data[0]->request_number; ?>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Request Sparepart & Auxiliaries</h4>
+                        <!--  <p class="card-title-desc"> layout options : from inline, horizontal & custom grid implementations</p> -->
+                    </div>
+                    <div class="card-body p-4">
+
+                    <div class="col-sm-12">
+                            <div class="mt-4 mt-lg-0">
+								<form method="post" action="/production-req-sparepart-auxiliaries-detail-update" class="form-material m-t-40" enctype="multipart/form-data">
+								@csrf
+									<input id="request_number_original" type="hidden" class="form-control" name="request_number" value="{{ Request::segment(2) }}">
+									<div class="row mb-4 field-wrapper required-field">
+										<label for="horizontal-firstname-input" class="col-sm-3 col-form-label">Request Number</label>
+										<div class="col-sm-9">
+											<input type="text" name="request_number_view" class="form-control" value="{{ $data[0]->request_number; }}" readonly>
+											@if($errors->has('request_number_view'))
+												<div class="text-danger"><b>{{ $errors->first('request_number_view') }}</b></div>
+											@endif
+										</div>
+									</div>
+									<div class="row mb-4 field-wrapper required-field">
+										<label for="horizontal-email-input" class="col-sm-3 col-form-label">Date</label>
+										<div class="col-sm-9">
+											<input type="date" name="date" class="form-control" value="{{ $data[0]->date; }}">
+											@if($errors->has('date'))
+												<div class="text-danger"><b>{{ $errors->first('date') }}</b></div>
+											@endif
+										</div>
+									</div>
+									<div class="row mb-4 field-wrapper required-field">
+										<label for="horizontal-password-input" class="col-sm-3 col-form-label">Departements </label>
+										<div class="col-sm-9">
+											<select class="form-select data-select2" name="id_master_departements" id="id_master_departements">
+												<option>** Please Select A Departements</option>
+												@foreach ($ms_departements as $data_for)
+													<option value="{{ $data_for->id }}" {{ $data_for->id == $data[0]->id_master_departements ? 'selected' : '' }}>{{ $data_for->name }}</option>
+												@endforeach
+											</select>
+											@if($errors->has('id_master_departements'))
+												<div class="text-danger"><b>{{ $errors->first('id_master_departements') }}</b></div>
+											@endif
+										</div>
+									</div>
+									<div class="row mb-4 field-wrapper required-field">
+										<label for="horizontal-firstname-input" class="col-sm-3 col-form-label">Status </label>
+										<div class="col-sm-9">
+											<input type="text" class="form-control" name="status" value="Request" readonly>
+											@if($errors->has('status'))
+												<div class="text-danger"><b>{{ $errors->first('status') }}</b></div>
+											@endif
+										</div>
+									</div>
+									<div class="row justify-content-end">
+										<div class="col-sm-9">
+											<div>
+												<button type="submit" class="btn btn-success w-md" name="update"><i class="bx bx-save" title="Back"></i> UPDATE</button>
+											</div>
+										</div>
+									</div>
+                                </form>    
+                        
+                            </div>
+							
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> 
+		<div class="row">
+			<div class="col-lg-12">
+				<div class="card">
+					<div class="card-header">
+						<h4 class="card-title">Detail Request Sparepart & Auxiliaries</h4>
+						<!--  <p class="card-title-desc"> layout options : from inline, horizontal & custom grid implementations</p> -->
+					</div>
+					<div class="card-body p-4" id="detailTableSection">
+
+					<div class="col-sm-12">
+							<div class="mt-4 mt-lg-0">
+								<form method="post" action="/production-req-sparepart-auxiliaries-detail-add#detailTableSection" class="form-material m-t-40" enctype="multipart/form-data">
+								@csrf
+									<input type="hidden" class="form-control" name="request_number" value="{{ Request::segment(2) }}">
+									<div class="row mb-4 field-wrapper required-field">
+										<label for="horizontal-password-input" class="col-sm-3 col-form-label">Sparepart & Auxiliaries </label>
+										<div class="col-sm-9">
+											<select class="form-select data-select2" name="id_master_tool_auxiliaries" id="id_master_tool_auxiliaries">
+												<option value="">** Please Select A Sparepart & Auxiliaries </option>
+												@foreach ($ms_tool_auxiliaries as $data)
+													<option data-tokens="{{ $data->description }}" value="{{ $data->id }} | {{ $data->stock }}">{{ $data->description }} (Stok : {{ $data->stock==''?'0':$data->stock }})</option>
+												@endforeach
+											</select>
+											@if($errors->has('id_master_tool_auxiliaries'))
+												<div class="text-danger"><b>{{ $errors->first('id_master_tool_auxiliaries') }}</b></div>
+											@endif
+										</div>
+									</div>
+									<!--div class="row mb-4 field-wrapper">
+										<label for="horizontal-password-input" class="col-sm-3 col-form-label">Sparepart & Auxiliaries </label>
+										<div class="col-sm-9">
+											<input id="custom_field1" name="custom_field1" type="text" list="custom_field1_datalist" class="form-control" placeholder="** Please Select A Sparepart & Auxiliaries">
+											<datalist id="custom_field1_datalist">
+												<option>** Please Select A Sparepart & Auxiliaries </option>
+												@foreach ($ms_tool_auxiliaries as $data)
+													<option data-tokens="{{ $data->description }}" value="{{ $data->id }}">{{ $data->description }}</option>
+												@endforeach
+											</datalist>
+											<span id="error" class="text-danger"></span>
+										</div>
+									</div>
+									<script>
+										$('#your-form-id').on('submit', e => {
+											$('#error').empty();
+											let form = $(e.target);
+											let validOptions = form.find('#custom_field1_datalist option').map((key, option) => option.value).toArray();
+											let customField1Value = form.find('input[name=custom_field1]').eq(0).val();
+
+											// check if custom_field_1's value is in the datalist. If it's not, it's an invalid choice
+											if ( !(validOptions.indexOf(customField1Value) > -1) ) {
+												// show error
+												$('#error').text('Invalid Choice');
+												// prevent form submission (you should still validate in the backend)
+												e.preventDefault();
+											}
+										});
+									</script-->
+									<div class="row mb-4 field-wrapper required-field">
+										<label for="horizontal-firstname-input" class="col-sm-3 col-form-label">Qty</label>
+										<div class="col-sm-9">
+											<input type="number" class="form-control" name="qty">
+											@if($errors->has('qty'))
+												<div class="text-danger"><b>{{ $errors->first('qty') }}</b></div>
+											@endif
+										</div>
+									</div>
+									<div class="row mb-4 field-wrapper">
+										<label for="horizontal-firstname-input" class="col-sm-3 col-form-label">Remarks</label>
+										<div class="col-sm-9">
+											<input type="text" class="form-control" name="remarks">
+											<p class="card-title-desc"><code>Isi dengan <strong>No.WO</strong> (jika ada).</code></p>
+											@if($errors->has('remarks'))
+												<div class="text-danger"><b>{{ $errors->first('remarks') }}</b></div>
+											@endif
+										</div>
+									</div>
+									<div class="row justify-content-end">
+										<div class="col-sm-9">
+											<div>
+												<button type="reset" class="btn btn-secondary w-md"><i class="bx bx-refresh" title="Reset"></i> RESET</button>
+												<button type="submit" class="btn btn-primary w-md" name="save"><i class="bx bx-list-plus" title="Add"></i> ADD to TABLE DETAIL</button>
+											</div>
+										</div>
+									</div>				
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div> 
+		<div class="row">
+			<div class="col-12">
+				<div class="card">
+					<div class="card-header">
+						<div class="d-flex justify-content-between align-items-center">
+							<div>
+								<h4 class="mb-sm-0 font-size-18"><i class="bx bx-list-check" title="Add"></i> Table Detail</h4>                                
+							</div>
+						</div>
+					</div>
+					<div class="card-body">
+						@if(!empty($data_detail[0]))
+						<div class="table-responsive">
+							<table id="datatable" class="table table-bordered dt-responsive  nowrap w-100">
+								<thead>
+									<tr>
+									<tr>
+										<th width="20%">Request Sparepart & Auxiliaries</th>
+										<th width="20%">QTY</th>
+										<th width="20%">Remarks</th>
+										<th width="20%">Aksi</th>
+									</tr>
+								</thead>
+								<tbody>
+									@foreach ($data_detail as $data_detail)
+									<tr>
+										<td>{{ $data_detail->description }}</td>
+										<td>{{ $data_detail->qty }}</td> 
+										<td>{{ $data_detail->remarks }}</td>
+										
+										
+										<td>	
+											<center>
+												<form action="/production-req-sparepart-auxiliaries-detail-delete" method="post" class="d-inline" enctype="multipart/form-data">
+													@csrf		
+													<input type="hidden" class="form-control" name="request_number" value="{{ Request::segment(2) }}">
+													<button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure to delete this item ?')" value="{{ sha1($data_detail->id) }}" name="hapus_detail">
+														<i class="bx bx-trash-alt" title="Delete" ></i> DELETE
+													</button>
+												</form>	
+												
+												<button data-bs-toggle="modal" data-bs-target="#editItemModal{{$data_detail->id}}" class="btn btn-info waves-effect waves-light" name="edit" id="edit{{$data_detail->id}}">
+													<i class="bx bx-edit-alt" title="Edit"></i>
+													EDIT
+												</button>
+											</center>
+											@include('production.modal_detail_req_sparepart_auxiliaries')
+										</td>
+									 
+									</tr>
+									<!-- Modal Edit-->
+									<div class="modal fade" id="editItemModal{{$data_detail->id}}" tabindex="-1" aria-labelledby="editItemModalLabel" aria-hidden="true">
+										<div class="modal-dialog">
+											<div class="modal-content">
+												<div class="modal-header">
+													<h5 class="modal-title" id="editItemModalLabel">Edit Request Sparepart & Auxiliaries Detail</h5>
+													<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+												</div>
+												<form action="/production-req-sparepart-auxiliaries-detail-edit-save/{{ sha1($data_detail->id) }}" method="POST">
+													@csrf
+													<input type="hidden" name="request_number" class="form-control" value="{{ sha1($request_number); }}" readonly>
+													<div class="modal-body">
+														<div class="row mb-3 required-field">
+															<label for="description" class="form-label">Sparepart & Auxiliaries </label>
+															
+															<select class="form-control data-select2x" name="id_master_tool_auxiliaries" id="id_master_tool_auxiliaries">
+																<option value="">** Please Select A Sparepart & Auxiliaries </option>
+																@foreach ($ms_tool_auxiliaries as $data)
+																	<option data-tokens="{{ $data->description }}" value="{{ $data->id }} | {{ $data->stock }}" {{ $data_detail->id_master_tool_auxiliaries==$data->id?'selected':'' }} >{{ $data->description }} (Stok : {{ $data->stock==''?'0':$data->stock }})</option>
+																	
+																@endforeach
+															</select>
+															@if($errors->has('id_master_tool_auxiliaries'))
+																<div class="text-danger"><b>{{ $errors->first('id_master_tool_auxiliaries') }}</b></div>
+															@endif
+															
+														</div>
+														<div class="mb-3 required-field">
+															<label for="description" class="form-label">Qty</label>
+															<input type="number" class="form-control" name="qty"value="{{ $data_detail->qty }}">
+															@if($errors->has('qty'))
+																<div class="text-danger"><b>{{ $errors->first('qty') }}</b></div>
+															@endif
+														</div>
+														<div class="mb-3 required-field">
+															<label for="description" class="form-label">Remarks</label>
+															<input type="text" class="form-control" name="remarks" value="{{ $data_detail->remarks }}">
+															<p class="card-title-desc"><code>Isi dengan <strong>No.WO</strong> (jika ada).</code></p>
+															@if($errors->has('remarks'))
+																<div class="text-danger"><b>{{ $errors->first('remarks') }}</b></div>
+															@endif
+														</div>
+													</div>
+													<div class="modal-footer">
+														<input type="hidden" class="form-control" name="token_rb" value="{{ Request::segment(2) }}">
+														<input type="hidden" class="form-control" name="token_rb_pr" value="">
+														<input type="hidden" class="form-control" name="token_rb_pr_detail" value="{{ sha1($data_detail->id); }}">
+														
+														<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+															<i class="bx bx-x" title="Tutup"></i>												
+														</button>
+														<button type="submit" class="btn btn-success" name="save">
+															<i class="bx bx-check " title="Simpan"></i>
+														</button>
+													</div>
+												</form>
+											</div>
+										</div>
+									</div>
+									@endforeach
+								</tbody>
+							</table>
+						</div>
+						@else
+							<div class="row">
+								<div class="col-lg-12 text-center">
+									<label>Data Tidak Tersedia</label>
+								</div>
+							</div>
+							
+						@endif
+					</div>
+				</div>
+			</div>
+		</div>
+		@else
+			<div class="row">
+				<div class="col-lg-12 text-center">
+					<div class="card">
+						<div class="card-body">
+							<label>Data Tidak Tersedia</label>
+						</div>
+                    </div>
+                </div>
+            </div>
+			
+		@endif
+    
+                    <!-- end row -->
+    </div>
+</div>
+
+@endsection
+@section('styles')
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+@endsection
