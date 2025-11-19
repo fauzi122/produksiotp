@@ -2548,24 +2548,27 @@ class ProductionController extends Controller
 						// Support both 'term' (Select2 default) and legacy 'search'
 						$searchTerm = trim((string) (request('term') ?? request('search') ?? ''));
 
-						// Base: Slitting closed, status FG/FLD, used_next_shift = '1'
-						$query = DB::table('barcode_detail as a')
-							->select('a.id', 'a.barcode_number')
-							->join('report_sf_production_results as d', 'd.barcode', '=', 'a.barcode_number')
-							->join('report_sfs as e', 'e.id', '=', 'd.id_report_sfs')
+						// Optimized: use whereIn with subquery instead of joins for better performance
+						// Step 1: Get valid barcodes from Slitting (Closed status) - use subquery
+						$validBarcodesSubquery = DB::table('report_sf_production_results as d')
+							->join('report_sfs as e', 'd.id_report_sfs', '=', 'e.id')
 							->where('d.type_result', 'Slitting')
 							->where('e.status', 'Closed')
-							->whereIn('a.status', ['In Stock SLT FG', 'In Stock FLD'])
-							->where('a.used_next_shift', '1');
+							->select('d.barcode');
 
-						// Exclude latest used_next_shift = '0'
-						$query->whereNotExists(function ($sub) {
-							$sub->select(DB::raw(1))
-								->from('report_bag_production_results as r')
-								->whereRaw('r.barcode_start = a.barcode_number')
-								->where('r.used_next_shift', '0')
-								->whereRaw('r.id = (SELECT MAX(r2.id) FROM report_bag_production_results r2 WHERE r2.barcode_start = a.barcode_number)');
-						});
+						// Step 2: Get excluded barcodes (latest used_next_shift = '0')
+						$excludedSubquery = DB::table('report_bag_production_results as r1')
+							->whereRaw('r1.id = (SELECT MAX(r2.id) FROM report_bag_production_results r2 WHERE r2.barcode_start = r1.barcode_start)')
+							->where('r1.used_next_shift', '0')
+							->select('r1.barcode_start');
+
+						// Main query: simpler, faster
+						$query = DB::table('barcode_detail as a')
+							->select('a.id', 'a.barcode_number')
+							->whereIn('a.status', ['In Stock SLT FG', 'In Stock FLD'])
+							->where('a.used_next_shift', '1')
+							->whereIn('a.barcode_number', $validBarcodesSubquery)
+							->whereNotIn('a.barcode_number', $excludedSubquery);
 
 						if ($searchTerm !== '') {
 							$query->where('a.barcode_number', 'like', "%{$searchTerm}%");
