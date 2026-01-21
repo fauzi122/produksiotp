@@ -2552,7 +2552,7 @@ class ProductionController extends Controller
 						// Step 1: Get valid barcodes from Slitting (Closed status) - use subquery
 						$validBarcodesSubquery = DB::table('report_sf_production_results as d')
 							->join('report_sfs as e', 'd.id_report_sfs', '=', 'e.id')
-							->where('d.type_result', 'Slitting')
+							->whereIn('d.type_result', ['Folding', 'Slitting'])
 							->where('e.status', 'Closed')
 							->select('d.barcode');
 
