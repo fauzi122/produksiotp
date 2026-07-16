@@ -313,11 +313,12 @@ class ProductionReportRmAuxOtherController extends Controller
 		if ($request->has('save')) {
 			$request_id = $_POST['request_id'];
 
-			$data = ProductionReportRmAuxOther::whereRaw("sha1(report_rm_aux_others.id) = '$request_id'")
-				->select('id', 'id_sales_orders')
-				->get();
+			$data = ProductionReportRmAuxOther::leftJoin('sales_orders as s', 'report_rm_aux_others.id_sales_orders', '=', 's.id')
+				->select('report_rm_aux_others.id', 'report_rm_aux_others.id_sales_orders', 's.qty as so_qty')
+				->whereRaw("sha1(report_rm_aux_others.id) = '$request_id'")
+				->first();
 
-			if (!empty($data[0])) {
+			if (!empty($data)) {
 				$pesan = [
 					'start_time.required' => 'Cannot Be Empty',
 					'finish_time.required' => 'Cannot Be Empty',
@@ -330,8 +331,23 @@ class ProductionReportRmAuxOtherController extends Controller
 					'qty_use' => 'required|numeric|min:0.01',
 				], $pesan);
 
-				$validatedData['id_report_rm_aux_others'] = $data[0]->id;
-				$validatedData['id_sales_orders'] = $data[0]->id_sales_orders;
+				$qty_use = floatval($validatedData['qty_use']);
+				$so_qty = floatval($data->so_qty ?? 0);
+				$max_qty_use = $so_qty * 1.10;
+
+				// Calculate sum of existing qty_use for this report
+				$existing_qty = DB::table('report_rm_aux_other_production_results')
+					->where('id_report_rm_aux_others', '=', $data->id)
+					->sum('qty_use') ?? 0;
+
+				$total_qty_use = $existing_qty + $qty_use;
+
+				if ($so_qty > 0 && $total_qty_use > $max_qty_use) {
+					return Redirect::back()->withInput()->with('pesan_danger', 'Total Qty Usage tidak boleh melebihi 110% dari SO Quantity (Maksimal Total: ' . number_format($max_qty_use, 2) . ' Kg, Sudah Terpakai: ' . number_format($existing_qty, 2) . ' Kg).');
+				}
+
+				$validatedData['id_report_rm_aux_others'] = $data->id;
+				$validatedData['id_sales_orders'] = $data->id_sales_orders;
 				$validatedData['product_info'] = $_POST['product_info'] ?? null;
 				$validatedData['lot_number'] = $_POST['lot_number'] ?? null;
 				$validatedData['barcode_end'] = $_POST['barcode_end'] ?? null;
@@ -397,7 +413,13 @@ class ProductionReportRmAuxOtherController extends Controller
 				->select('a.barcode_number')
 				->get();
 
-			return view('production.entry_report_rm_aux_detail_edit_production_result', compact('data', 'data_pr', 'ms_barcodes_so'));
+			// Get sum of other qty_use for this report (excluding current result)
+			$existing_qty_other = DB::table('report_rm_aux_other_production_results')
+				->where('id_report_rm_aux_others', '=', $data[0]->id)
+				->where('id', '!=', $data_pr[0]->id)
+				->sum('qty_use') ?? 0;
+
+			return view('production.entry_report_rm_aux_detail_edit_production_result', compact('data', 'data_pr', 'ms_barcodes_so', 'existing_qty_other'));
 		} else {
 			return Redirect::to('/production-ent-report-rm-aux')->with('pesan_danger', 'There Is An Error.');
 		}
@@ -408,8 +430,9 @@ class ProductionReportRmAuxOtherController extends Controller
 		$request_id = $_POST['request_id'];
 		$request_id_pr = $_POST['request_id_pr'];
 
-		$data_pr = ProductionReportRmAuxOtherProductionResult::whereRaw("sha1(id) = '$request_id_pr'")
-			->select('*')
+		$data_pr = ProductionReportRmAuxOtherProductionResult::leftJoin('sales_orders as s', 'report_rm_aux_other_production_results.id_sales_orders', '=', 's.id')
+			->select('report_rm_aux_other_production_results.*', 's.qty as so_qty')
+			->whereRaw("sha1(report_rm_aux_other_production_results.id) = '$request_id_pr'")
 			->get();
 
 		if (!empty($data_pr[0])) {
@@ -424,6 +447,22 @@ class ProductionReportRmAuxOtherController extends Controller
 				'finish_time' => 'required',
 				'qty_use' => 'required|numeric|min:0.01',
 			], $pesan);
+
+			$new_qty_use = floatval($validatedData['qty_use']);
+			$so_qty = floatval($data_pr[0]->so_qty ?? 0);
+			$max_qty_use = $so_qty * 1.10;
+
+			// Get sum of other qty_use for this report (excluding current result)
+			$existing_qty_other = DB::table('report_rm_aux_other_production_results')
+				->where('id_report_rm_aux_others', '=', $data_pr[0]->id_report_rm_aux_others)
+				->where('id', '!=', $data_pr[0]->id)
+				->sum('qty_use') ?? 0;
+
+			$total_qty_use = $existing_qty_other + $new_qty_use;
+
+			if ($so_qty > 0 && $total_qty_use > $max_qty_use) {
+				return Redirect::back()->withInput()->with('pesan_danger', 'Total Qty Usage tidak boleh melebihi 110% dari SO Quantity (Maksimal Total: ' . number_format($max_qty_use, 2) . ' Kg, Detail Lainnya: ' . number_format($existing_qty_other, 2) . ' Kg).');
+			}
 
 			$validatedData['product_info'] = $_POST['product_info'] ?? null;
 			$validatedData['lot_number'] = $_POST['lot_number'] ?? null;

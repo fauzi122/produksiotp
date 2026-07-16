@@ -28,7 +28,7 @@
 						<h4 class="card-title"><i data-feather="check-square"></i> Edit Production Result</h4>
 					</div>
 					<div class="card-body p-4">
-						<form method="post" action="/production-entry-report-rm-aux-detail-production-result-edit-save" class="form-material m-t-40" enctype="multipart/form-data">
+						<form id="form-edit-result" method="post" action="/production-entry-report-rm-aux-detail-production-result-edit-save" class="form-material m-t-40" enctype="multipart/form-data">
 							@csrf
 							<input type="hidden" name="request_id" value="{{ Request::segment(3) }}">
 							<input type="hidden" name="request_id_pr" value="{{ Request::segment(4) }}">
@@ -58,6 +58,8 @@
 								<label class="col-sm-3 col-form-label">Qty Usage</label>
 								<div class="col-sm-9">
 									<input type="number" step="any" class="form-control" name="qty_use" id="qty_use" required min="0.01" value="{{ $data_pr[0]->qty_use ?? 0 }}">
+									<div class="text-muted mt-1 small">Maksimal Qty Usage (110% SO Qty): <span id="max_qty_use_label">0</span> Kg (Detail Lainnya: {{ number_format($existing_qty_other ?? 0, 2) }} Kg)</div>
+									<div id="qty-use-warning" style="display:none; color: #f46a6a;" class="small mt-1 font-weight-semibold"></div>
 								</div>
 							</div>
 
@@ -83,7 +85,6 @@
 									<select class="form-select data-select2" name="product" id="product" required>
 										<option value="">** Loading External Lots... **</option>
 									</select>
-									<div id="ext-lot-warning" style="display:none; margin-top: 5px;"></div>
 								</div>
 							</div>
 
@@ -106,27 +107,30 @@
 									var typeProduct = "{{ $data[0]->type_product }}";
 									var idMasterProducts = "{{ $data[0]->id_master_products }}";
 									var soQty = "{{ $data[0]->so_qty ?? 0 }}";
-									var currentLotNumber = "{{ $data_pr[0]->lot_number }}";
-									var currentProduct = "{{ $data_pr[0]->product }}"; // Saved External Lot
+									
+									var soQtyVal = parseFloat(soQty || 0);
+									if (soQtyVal > 0) {
+										$('#max_qty_use_label').text((soQtyVal * 1.10).toFixed(2));
+									}
+									var existingQtyOther = parseFloat("{{ $existing_qty_other ?? 0 }}");
 
-									function checkQtyThreshold() {
-										var option = $('#product option:selected');
-										var sisa = parseFloat(option.attr('data-sisa') || 0);
+									function validateQtyUse() {
 										var qtyUse = parseFloat($('#qty_use').val() || 0);
-										var threshold = qtyUse * 1.10;
-										
-										if ($('#product').val() && qtyUse > 0) {
-											var infoHtml = '';
-											if (sisa < threshold) {
-												infoHtml = '<span class="text-danger"><b>⚠️ Warning:</b> Sisa qty pada External Lot ini (' + sisa + ' Kg) kurang dari 110% qty input (' + threshold.toFixed(1) + ' Kg)</span>';
-											} else {
-												infoHtml = '<span class="text-success"><b>✅ Info:</b> Sisa qty pada External Lot ini (' + sisa + ' Kg) mencukupi batas 110% qty input (' + threshold.toFixed(1) + ' Kg)</span>';
-											}
-											$('#ext-lot-warning').html(infoHtml).show();
+										var maxQtyUse = soQtyVal * 1.10;
+										var totalQtyUse = existingQtyOther + qtyUse;
+										if (soQtyVal > 0 && totalQtyUse > maxQtyUse) {
+											$('#qty-use-warning').html('⚠️ Total Qty Usage (' + totalQtyUse.toFixed(2) + ' Kg) tidak boleh melebihi 110% dari SO Quantity (Maksimal: ' + maxQtyUse.toFixed(2) + ' Kg, Detail Lainnya: ' + existingQtyOther.toFixed(2) + ' Kg)').show();
+											return false;
 										} else {
-											$('#ext-lot-warning').hide();
+											$('#qty-use-warning').hide();
+											return true;
 										}
 									}
+
+									// Run validation once on load
+									validateQtyUse();
+									var currentLotNumber = "{{ $data_pr[0]->lot_number }}";
+									var currentProduct = "{{ $data_pr[0]->product }}"; // Saved External Lot
 
 									// Fetch External Lot options (all lots of the product directly)
 									if(typeProduct && idMasterProducts) {
@@ -163,15 +167,22 @@
 										});
 									}
 
-									// Set hidden lot_number and warn if External Lot sisa is less than 110% of qty_use
+									// Set hidden lot_number
 									$('#product').change(function(){
 										var lotNumber = $('#product option:selected').attr('data-lot_number') || '';
 										$('#form_lot_number').val(lotNumber);
-										checkQtyThreshold();
 									});
 
 									$('#qty_use').on('input change', function(){
-										checkQtyThreshold();
+										validateQtyUse();
+									});
+
+									$('#form-edit-result').submit(function(e){
+										if (!validateQtyUse()) {
+											e.preventDefault();
+											alert('Qty Usage melebihi batas maksimal 110% dari SO Quantity!');
+											return false;
+										}
 									});
 								});
 							</script>
