@@ -13,6 +13,7 @@ use App\Http\Controllers\ProductionController;
 use App\Http\Controllers\ProductionReportSlittingController;
 use App\Http\Controllers\ProductionReportFoldingController;
 use App\Http\Controllers\ProductionReportBagMakingController;
+use App\Http\Controllers\ProductionReportRmAuxOtherController;
 
 //Route Login
 Route::get('/', [AuthController::class, 'login'])->name('login');
@@ -209,6 +210,23 @@ Route::middleware(['auth', 'clear.permission.cache', 'permission:Produksi|Produk
 	Route::post('/production-entry-report-bag-making-wrap-edit', [ProductionReportBagMakingController::class, 'production_entry_report_bag_making_wrap_edit'])->name('production_entry_report_bag_making_wrap_edit');
 	Route::post('/production-entry-report-bag-making-wrap-delete', [ProductionReportBagMakingController::class, 'production_entry_report_bag_making_wrap_delete'])->name('production_entry_report_bag_making_wrap_delete');
 	//END REPORT BAG MAKING
+
+	//START REPORT RM, AUX, OTHERS
+	Route::get('/production-ent-report-rm-aux', [ProductionReportRmAuxOtherController::class, 'production_entry_report_rm_aux'])->name('production_entry_report_rm_aux');
+	Route::get('/production-ent-report-rm-aux-json', [ProductionReportRmAuxOtherController::class, 'production_entry_report_rm_aux_json'])->name('production_entry_report_rm_aux_json');
+	Route::get('/production-ent-report-rm-aux-add', [ProductionReportRmAuxOtherController::class, 'production_entry_report_rm_aux_add'])->name('production_entry_report_rm_aux_add');
+	Route::post('/production-ent-report-rm-aux-save', [ProductionReportRmAuxOtherController::class, 'production_entry_report_rm_aux_save'])->name('production_entry_report_rm_aux_save');
+	Route::get('/production-ent-report-rm-aux-detail/{id}', [ProductionReportRmAuxOtherController::class, 'production_entry_report_rm_aux_detail'])->name('production_entry_report_rm_aux_detail');
+	Route::post('/production-ent-report-rm-aux-update', [ProductionReportRmAuxOtherController::class, 'production_entry_report_rm_aux_update'])->name('production_entry_report_rm_aux_update');
+	Route::get('/production-ent-report-rm-aux-delete/{id}', [ProductionReportRmAuxOtherController::class, 'production_entry_report_rm_aux_delete'])->name('production_entry_report_rm_aux_delete');
+	Route::post('/production-entry-report-rm-aux-detail-production-result-add', [ProductionReportRmAuxOtherController::class, 'production_entry_report_rm_aux_detail_production_result_add'])->name('production_entry_report_rm_aux_detail_production_result_add');
+	Route::get('/production-entry-report-rm-aux-detail-production-result-edit/{id}/{id_pr}', [ProductionReportRmAuxOtherController::class, 'production_entry_report_rm_aux_detail_production_result_edit'])->name('production_entry_report_rm_aux_detail_production_result_edit');
+	Route::post('/production-entry-report-rm-aux-detail-production-result-edit-save', [ProductionReportRmAuxOtherController::class, 'production_entry_report_rm_aux_detail_production_result_edit_save'])->name('production_entry_report_rm_aux_detail_production_result_edit_save');
+	Route::post('/production-entry-report-rm-aux-detail-production-result-delete', [ProductionReportRmAuxOtherController::class, 'production_entry_report_rm_aux_detail_production_result_delete'])->name('production_entry_report_rm_aux_detail_production_result_delete');
+	Route::get('/json_get_sales_orders_rm_aux', [ProductionReportRmAuxOtherController::class, 'jsonGetSalesOrdersRmAux'])->name('jsonGetSalesOrdersRmAux');
+	Route::get('/json_get_gln_by_product', [ProductionReportRmAuxOtherController::class, 'jsonGetGlnByProduct'])->name('jsonGetGlnByProduct');
+	Route::get('/json_get_barcodes_by_lot', [ProductionReportRmAuxOtherController::class, 'jsonGetBarcodesByLot'])->name('jsonGetBarcodesByLot');
+	//END REPORT RM, AUX, OTHERS
 
 	//Dashboard
 	Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

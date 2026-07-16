@@ -188,6 +188,7 @@
                                 <li><a href="/production-ent-report-slitting" data-key="t-blog-list"><i data-feather="check-square"></i> Report Slitting</a></li>
                                 <li><a href="/production-ent-report-folding" data-key="t-blog-list"><i data-feather="check-square"></i> Report Folding</a></li>
                                 <li><a href="/production-ent-report-bag-making" data-key="t-blog-list"><i data-feather="check-square"></i> Report Bag Making</a></li>
+                                <li><a href="/production-ent-report-rm-aux" data-key="t-blog-list"><i data-feather="check-square"></i> Report RM, Aux, Others</a></li>
                             </ul>
                         </li>
                        
