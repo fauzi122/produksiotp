@@ -37,8 +37,17 @@
 		<div class="row">
 			<div class="col-lg-12">
 				<div class="card">
-					<div class="card-header">
-						<h4 class="card-title">Report RM, Aux, Others</h4>
+					<div class="card-header d-flex align-items-center justify-content-between">
+						<h4 class="card-title mb-0">Report RM, Aux, Others</h4>
+						@php
+							$tProd = strtoupper($data[0]->type_product ?? '');
+							if ($tProd === 'AUX') { $typeBadge = '<span class="badge bg-warning fs-6">AUX</span>'; }
+							elseif ($tProd === 'SPAREPART' || $tProd === 'SPAREPARTS') { $typeBadge = '<span class="badge bg-info fs-6">Sparepart</span>'; }
+							elseif ($tProd === 'OTHER' || $tProd === 'OTHERS') { $typeBadge = '<span class="badge bg-secondary fs-6">Other</span>'; }
+							elseif (!empty($tProd)) { $typeBadge = '<span class="badge bg-primary fs-6">' . e($tProd) . '</span>'; }
+							else { $typeBadge = '<span class="badge bg-primary fs-6">RM</span>'; }
+						@endphp
+						{!! $typeBadge !!}
 					</div>
 					<div class="card-body p-4">
 						<div class="col-sm-12">
@@ -229,8 +238,9 @@
 						<div class="row">
 							<div class="col-lg-5">
 								<div class="card">
-									<div class="card-header">
-										<h4 class="card-title">Form Add Result</h4>
+									<div class="card-header d-flex align-items-center justify-content-between">
+										<h4 class="card-title mb-0">Form Add Result</h4>
+										{!! $typeBadge !!}
 									</div>
 									<div class="card-body p-4">
 										<form id="form-add-result" method="post" action="/production-entry-report-rm-aux-detail-production-result-add#detailTableSection" class="form-material m-t-40" enctype="multipart/form-data">

@@ -2256,16 +2256,27 @@ class ProductionController extends Controller
 				->select('a.id', 'a.description')
 				->whereRaw("a.id = '$id_master_products'")
 				->get();
-		} else {
-			$table = $type_product == 'FG' ? 'master_product_fgs AS a' : 'master_wips AS a';
-			$field_wl = $type_product == 'FG' ? 'a.height_unit' : 'a.length_unit';
-
-			$datas = DB::table($table)
+		} else if ($type_product == 'FG') {
+			$datas = DB::table('master_product_fgs AS a')
 				->select('a.*')
 				->selectRaw('b.unit_code AS width_unit_code')
 				->selectRaw('c.unit_code AS length_unit_code')
 				->leftJoin('master_units AS b', 'a.width_unit', '=', 'b.id')
-				->leftJoin('master_units AS c', $field_wl, '=', 'c.id')
+				->leftJoin('master_units AS c', 'a.height_unit', '=', 'c.id')
+				->whereRaw("a.id = '$id_master_products'")
+				->get();
+		} else if ($type_product == 'WIP') {
+			$datas = DB::table('master_wips AS a')
+				->select('a.*')
+				->selectRaw('b.unit_code AS width_unit_code')
+				->selectRaw('c.unit_code AS length_unit_code')
+				->leftJoin('master_units AS b', 'a.width_unit', '=', 'b.id')
+				->leftJoin('master_units AS c', 'a.length_unit', '=', 'c.id')
+				->whereRaw("a.id = '$id_master_products'")
+				->get();
+		} else {
+			$datas = DB::table('master_tool_auxiliaries AS a')
+				->select('a.id', 'a.description')
 				->whereRaw("a.id = '$id_master_products'")
 				->get();
 		}

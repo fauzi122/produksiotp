@@ -47,7 +47,7 @@ class ProductionReportRmAuxOtherController extends Controller
 			->leftJoin('master_employees AS f', 'report_rm_aux_others.operator', '=', 'f.id')
 			->leftJoin('master_employees AS g', 'report_rm_aux_others.ketua_regu', '=', 'g.id')
 			->leftJoin('sales_orders AS h', 'report_rm_aux_others.id_sales_orders', '=', 'h.id')
-			->select('report_rm_aux_others.*', 'e.name AS customer_name', 'h.so_number')
+			->select('report_rm_aux_others.*', 'e.name AS customer_name', 'h.so_number', 'h.type_product')
 			->selectRaw('f.name AS operator_name')
 			->selectRaw('g.name AS ketua_regu_name')
 			->orderBy('report_rm_aux_others.created_at', 'desc')
@@ -62,7 +62,21 @@ class ProductionReportRmAuxOtherController extends Controller
 				$operator = !empty($data->operator_name) ? '<br><span class="badge bg-success-subtle text-success">Operator : ' . $data->operator_name . '</span>' : '';
 				$so = !empty($data->so_number) ? '<br><code>SO : ' . $data->so_number . '</code>' : '';
 				$status = empty($data->status) ? "Tidak Tersedia" : $data->status;
-				$order_info = '<p><code>Customer : </code><br>' . $data->customer_name . $so . '<br><footer class="blockquote-footer">Status : <cite>' . $status . '</cite>' . $operator . '</footer></p>';
+
+				$typeProduct = strtoupper($data->type_product ?? '');
+				if ($typeProduct === 'AUX') {
+					$typeBadge = '<span class="badge bg-warning-subtle text-warning">AUX</span>';
+				} elseif ($typeProduct === 'SPAREPART' || $typeProduct === 'SPAREPARTS') {
+					$typeBadge = '<span class="badge bg-info-subtle text-info">Sparepart</span>';
+				} elseif ($typeProduct === 'OTHER' || $typeProduct === 'OTHERS') {
+					$typeBadge = '<span class="badge bg-secondary-subtle text-secondary">Other</span>';
+				} elseif (!empty($typeProduct)) {
+					$typeBadge = '<span class="badge bg-primary-subtle text-primary">' . htmlspecialchars($typeProduct) . '</span>';
+				} else {
+					$typeBadge = '<span class="badge bg-primary-subtle text-primary">RM</span>';
+				}
+
+				$order_info = '<p><code>Customer : </code><br>' . $data->customer_name . $so . ' ' . $typeBadge . '<br><footer class="blockquote-footer">Status : <cite>' . $status . '</cite>' . $operator . '</footer></p>';
 				return $order_info;
 			})
 			->addColumn('team', function ($data) {
@@ -680,14 +694,24 @@ class ProductionReportRmAuxOtherController extends Controller
 		$type_product = request('type_product');
 		$id_master_products = request('id_master_products');
 
-		$datas = DB::table('good_receipt_note_details')
-			->where('type_product', '=', $type_product)
+		$query = DB::table('good_receipt_note_details')
 			->where('id_master_products', '=', $id_master_products)
 			->where('qc_passed', '=', 'Y')
 			->whereNotNull('lot_number')
 			->where('lot_number', '!=', '')
-			->where('lot_number', '!=', '0')
-			->select('lot_number')
+			->where('lot_number', '!=', '0');
+
+		if ($type_product == 'RM') {
+			$query->where('type_product', '=', 'RM');
+		} else if (in_array($type_product, ['AUX', 'TA'])) {
+			$query->whereIn('type_product', ['AUX', 'TA']);
+		} else if (in_array($type_product, ['Other', 'OTH'])) {
+			$query->whereIn('type_product', ['Other', 'OTH']);
+		} else if (!empty($type_product)) {
+			$query->where('type_product', '=', $type_product);
+		}
+
+		$datas = $query->select('lot_number')
 			->distinct()
 			->get();
 
@@ -702,14 +726,32 @@ class ProductionReportRmAuxOtherController extends Controller
 		$id_master_products = request('id_master_products');
 		$all_product_lots = request('all_product_lots', false);
 
+		if ($type_product == 'RM') {
+			$productTable = 'master_raw_materials';
+		} else if ($type_product == 'FG') {
+			$productTable = 'master_product_fgs';
+		} else if ($type_product == 'WIP') {
+			$productTable = 'master_wips';
+		} else {
+			$productTable = 'master_tool_auxiliaries';
+		}
+
 		$query = DB::table('detail_good_receipt_note_details as a')
 			->leftJoin('good_receipt_note_details as b', 'a.id_grn_detail', '=', 'b.id')
-			->leftJoin('master_raw_materials as c', 'b.id_master_products', '=', 'c.id')
+			->leftJoin($productTable . ' as c', 'b.id_master_products', '=', 'c.id')
 			->whereRaw("a.qty > a.qty_out");
 
 		if ($all_product_lots || $all_product_lots === "true") {
-			$query->where('b.type_product', '=', $type_product)
-				->where('b.id_master_products', '=', $id_master_products);
+			$query->where('b.id_master_products', '=', $id_master_products);
+			if ($type_product == 'RM') {
+				$query->where('b.type_product', '=', 'RM');
+			} else if (in_array($type_product, ['AUX', 'TA'])) {
+				$query->whereIn('b.type_product', ['AUX', 'TA']);
+			} else if (in_array($type_product, ['Other', 'OTH'])) {
+				$query->whereIn('b.type_product', ['Other', 'OTH']);
+			} else if (!empty($type_product)) {
+				$query->where('b.type_product', '=', $type_product);
+			}
 		} else {
 			$query->where('b.lot_number', '=', $lot_number);
 		}
