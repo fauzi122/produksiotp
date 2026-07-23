@@ -272,7 +272,7 @@
 												<label for="horizontal-firstname-input" class="col-sm-4 col-form-label">Qty Usage</label>
 												<div class="col-sm-8">
 													<input type="number" step="any" class="form-control" name="qty_use" id="qty_use" required min="0.01">
-													<div class="text-muted mt-1 small">Maksimal Qty Usage (110% SO Qty): <span id="max_qty_use_label">0</span> Kg (Sudah Terpakai: {{ number_format($data_detail_production->sum('qty_use'), 2) }} Kg)</div>
+													<div class="text-muted mt-1 small">Maksimal Qty Usage (110% SO Qty): <span id="max_qty_use_label">0</span> {{ $unit_name }} (Sudah Terpakai: {{ number_format($data_detail_production->sum('qty_use'), 2) }} {{ $unit_name }})</div>
 													<div id="qty-use-warning" style="display:none; color: #f46a6a;" class="small mt-1 font-weight-semibold"></div>
 												</div>
 											</div>
@@ -319,6 +319,7 @@
 													var typeProduct = "{{ $data[0]->type_product }}";
 													var idMasterProducts = "{{ $data[0]->id_master_products }}";
 													var soQty = "{{ $data[0]->so_qty ?? 0 }}";
+													var unitName = "{{ $unit_name }}";
 													
 													var soQtyVal = parseFloat(soQty || 0);
 													if (soQtyVal > 0) {
@@ -331,7 +332,7 @@
 														var maxQtyUse = soQtyVal * 1.10;
 														var totalQtyUse = existingQtyUse + qtyUse;
 														if (soQtyVal > 0 && totalQtyUse > maxQtyUse) {
-															$('#qty-use-warning').html('⚠️ Total Qty Usage (' + totalQtyUse.toFixed(2) + ' Kg) tidak boleh melebihi 110% dari SO Quantity (Maksimal: ' + maxQtyUse.toFixed(2) + ' Kg, Sudah Terpakai: ' + existingQtyUse.toFixed(2) + ' Kg)').show();
+															$('#qty-use-warning').html('⚠️ Total Qty Usage (' + totalQtyUse.toFixed(2) + ' ' + unitName + ') tidak boleh melebihi 110% dari SO Quantity (Maksimal: ' + maxQtyUse.toFixed(2) + ' ' + unitName + ', Sudah Terpakai: ' + existingQtyUse.toFixed(2) + ' ' + unitName + ')').show();
 															return false;
 														} else {
 															$('#qty-use-warning').hide();
@@ -363,8 +364,10 @@
 																var html = '<option value="">** Please Select an External Lot **</option>';
 																if (response && response.length > 0) {
 																	$.each(response, function(idx, val) {
-																		html += '<option value="' + val.ext_lot_number + '" data-sisa="' + val.sisa + '" data-lot_number="' + val.lot_number + '">';
-																		html += val.ext_lot_number + ' (Lot: ' + val.lot_number + ') | ' + val.description + ' (Sisa Per EXT: ' + val.sisa + ' Kg)';
+																		var extLotDisplay = (val.ext_lot_number && val.ext_lot_number.trim() !== '') ? val.ext_lot_number : val.lot_number;
+																		var lotUnit = val.unit_code || unitName;
+																		html += '<option value="' + extLotDisplay + '" data-sisa="' + val.sisa + '" data-lot_number="' + val.lot_number + '">';
+																		html += extLotDisplay + ' (Lot: ' + val.lot_number + ') | ' + val.description + ' (Sisa Per EXT: ' + val.sisa + ' ' + lotUnit + ')';
 																		html += '</option>';
 																	});
 																} else {
@@ -424,7 +427,7 @@
 														<th>Barcode End</th>
 														<th>Ext Lot</th>
 														<th>SO Qty</th>
-														<th>Qty Usage</th>
+														<th>Qty Usage ({{ $unit_name }})</th>
 														<th>Aksi</th>
 													</tr>
 												</thead>
@@ -439,7 +442,7 @@
 														</td>
 														<td>{{ $result->lot_number }}</td>
 														<td>{{ $result->barcode_end }}</td>
-														<td>{{ $result->product }}</td>
+														<td>{{ ($result->product && trim($result->product) !== '') ? $result->product : ($result->lot_number ?? '-') }}</td>
 														<td>{{ $data[0]->so_qty ?? 0 }}</td>
 														<td><b>{{ $result->qty_use }}</b></td>
 														<td>
@@ -461,7 +464,7 @@
 												<tfoot>
 													<tr class="table-light">
 														<th colspan="7" class="text-end">Total Qty Usage:</th>
-														<th>{{ number_format($data_detail_production->sum('qty_use'), 2) }}</th>
+														<th>{{ number_format($data_detail_production->sum('qty_use'), 2) }} {{ $unit_name }}</th>
 														<th></th>
 													</tr>
 												</tfoot>

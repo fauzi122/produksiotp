@@ -58,7 +58,7 @@
 								<label class="col-sm-3 col-form-label">Qty Usage</label>
 								<div class="col-sm-9">
 									<input type="number" step="any" class="form-control" name="qty_use" id="qty_use" required min="0.01" value="{{ $data_pr[0]->qty_use ?? 0 }}">
-									<div class="text-muted mt-1 small">Maksimal Qty Usage (110% SO Qty): <span id="max_qty_use_label">0</span> Kg (Detail Lainnya: {{ number_format($existing_qty_other ?? 0, 2) }} Kg)</div>
+									<div class="text-muted mt-1 small">Maksimal Qty Usage (110% SO Qty): <span id="max_qty_use_label">0</span> {{ $unit_name }} (Detail Lainnya: {{ number_format($existing_qty_other ?? 0, 2) }} {{ $unit_name }})</div>
 									<div id="qty-use-warning" style="display:none; color: #f46a6a;" class="small mt-1 font-weight-semibold"></div>
 								</div>
 							</div>
@@ -107,6 +107,7 @@
 									var typeProduct = "{{ $data[0]->type_product }}";
 									var idMasterProducts = "{{ $data[0]->id_master_products }}";
 									var soQty = "{{ $data[0]->so_qty ?? 0 }}";
+									var unitName = "{{ $unit_name }}";
 									
 									var soQtyVal = parseFloat(soQty || 0);
 									if (soQtyVal > 0) {
@@ -119,7 +120,7 @@
 										var maxQtyUse = soQtyVal * 1.10;
 										var totalQtyUse = existingQtyOther + qtyUse;
 										if (soQtyVal > 0 && totalQtyUse > maxQtyUse) {
-											$('#qty-use-warning').html('⚠️ Total Qty Usage (' + totalQtyUse.toFixed(2) + ' Kg) tidak boleh melebihi 110% dari SO Quantity (Maksimal: ' + maxQtyUse.toFixed(2) + ' Kg, Detail Lainnya: ' + existingQtyOther.toFixed(2) + ' Kg)').show();
+											$('#qty-use-warning').html('⚠️ Total Qty Usage (' + totalQtyUse.toFixed(2) + ' ' + unitName + ') tidak boleh melebihi 110% dari SO Quantity (Maksimal: ' + maxQtyUse.toFixed(2) + ' ' + unitName + ', Detail Lainnya: ' + existingQtyOther.toFixed(2) + ' ' + unitName + ')').show();
 											return false;
 										} else {
 											$('#qty-use-warning').hide();
@@ -145,12 +146,14 @@
 
 												if (response && response.length > 0) {
 													$.each(response, function(idx, val) {
-														var selected = (val.ext_lot_number === currentProduct) ? 'selected' : '';
-														if(val.ext_lot_number === currentProduct) {
+														var extLotDisplay = (val.ext_lot_number && val.ext_lot_number.trim() !== '') ? val.ext_lot_number : val.lot_number;
+														var lotUnit = val.unit_code || unitName;
+														var selected = (extLotDisplay === currentProduct || val.ext_lot_number === currentProduct || val.lot_number === currentProduct) ? 'selected' : '';
+														if(extLotDisplay === currentProduct || val.ext_lot_number === currentProduct || val.lot_number === currentProduct) {
 															productFound = true;
 														}
-														html += '<option value="' + val.ext_lot_number + '" data-sisa="' + val.sisa + '" data-lot_number="' + val.lot_number + '" ' + selected + '>';
-														html += val.ext_lot_number + ' (Lot: ' + val.lot_number + ') | ' + val.description + ' (Sisa Per EXT: ' + val.sisa + ' Kg)';
+														html += '<option value="' + extLotDisplay + '" data-sisa="' + val.sisa + '" data-lot_number="' + val.lot_number + '" ' + selected + '>';
+														html += extLotDisplay + ' (Lot: ' + val.lot_number + ') | ' + val.description + ' (Sisa Per EXT: ' + val.sisa + ' ' + lotUnit + ')';
 														html += '</option>';
 													});
 												}

@@ -210,12 +210,28 @@ class ProductionReportRmAuxOtherController extends Controller
 	public function production_entry_report_rm_aux_detail($response_id)
 	{
 		$data = ProductionReportRmAuxOther::leftJoin('sales_orders as s', 'report_rm_aux_others.id_sales_orders', '=', 's.id')
-			->select("report_rm_aux_others.*", "s.so_number", "s.type_product", "s.id_master_products", "s.qty as so_qty")
+			->leftJoin('master_units as u', 's.id_master_units', '=', 'u.id')
+			->select("report_rm_aux_others.*", "s.so_number", "s.type_product", "s.id_master_products", "s.qty as so_qty", "u.unit_code", "u.unit")
 			->whereRaw("sha1(report_rm_aux_others.id) = '$response_id'")
 			->get();
 
 		if (!empty($data[0])) {
 			if ($data[0]->status == "Un Posted") {
+
+				$unit_name = 'Kg';
+				if (!empty($data[0]->unit_code)) {
+					$unit_name = $data[0]->unit_code;
+				} elseif (!empty($data[0]->type_product) && !empty($data[0]->id_master_products)) {
+					$productTable = $data[0]->type_product == 'RM' ? 'master_raw_materials' : 'master_tool_auxiliaries';
+					$unitObj = DB::table($productTable . ' as p')
+						->leftJoin('master_units as u', 'p.id_master_units', '=', 'u.id')
+						->where('p.id', '=', $data[0]->id_master_products)
+						->select('u.unit_code')
+						->first();
+					if (!empty($unitObj->unit_code)) {
+						$unit_name = $unitObj->unit_code;
+					}
+				}
 
 				$data_detail_production = DB::table('report_rm_aux_other_production_results AS a')
 					->leftJoin('sales_orders AS s', 'a.id_sales_orders', '=', 's.id')
@@ -257,7 +273,7 @@ class ProductionReportRmAuxOtherController extends Controller
 				$activity = 'Detail Entry Report RM, Aux, Others ID="' . $data[0]->id . '"';
 				$this->auditLogs($username, $ipAddress, $location, $access_from, $activity);
 
-				return view('production.entry_report_rm_aux_detail', compact('data', 'ms_sales_orders', 'data_detail_production', 'ms_operator', 'ms_ketua_regu', 'ms_known_by', 'ms_barcodes_so'));
+				return view('production.entry_report_rm_aux_detail', compact('data', 'ms_sales_orders', 'data_detail_production', 'ms_operator', 'ms_ketua_regu', 'ms_known_by', 'ms_barcodes_so', 'unit_name'));
 			} else {
 				return Redirect::to('/production-ent-report-rm-aux')->with('pesan_danger', 'There Is An Error.');
 			}
@@ -371,22 +387,7 @@ class ProductionReportRmAuxOtherController extends Controller
 				$ext_lot_number = $validatedData['product'];
 				$qty_use = floatval($validatedData['qty_use']);
 
-				if (!empty($lot_number) && !empty($ext_lot_number)) {
-					$dgrnd = DB::table('detail_good_receipt_note_details as a')
-						->leftJoin('good_receipt_note_details as b', 'a.id_grn_detail', '=', 'b.id')
-						->where('b.lot_number', '=', $lot_number)
-						->where('a.ext_lot_number', '=', $ext_lot_number)
-						->select('a.id')
-						->first();
-
-					if ($dgrnd) {
-						DB::table('detail_good_receipt_note_details')
-							->where('id', '=', $dgrnd->id)
-							->update([
-								'qty_out' => DB::raw("qty_out + $qty_use")
-							]);
-					}
-				}
+				$this->adjustStockQtyOut($lot_number, $ext_lot_number, $qty_use, '+');
 
 				$response = ProductionReportRmAuxOtherProductionResult::create($validatedData);
 
@@ -408,7 +409,8 @@ class ProductionReportRmAuxOtherController extends Controller
 	public function production_entry_report_rm_aux_detail_production_result_edit($response_id_rra, $response_id_rra_pr)
 	{
 		$data = ProductionReportRmAuxOther::leftJoin('sales_orders as s', 'report_rm_aux_others.id_sales_orders', '=', 's.id')
-			->select("report_rm_aux_others.*", "s.qty as so_qty")
+			->leftJoin('master_units as u', 's.id_master_units', '=', 'u.id')
+			->select("report_rm_aux_others.*", "s.type_product", "s.id_master_products", "s.qty as so_qty", "u.unit_code", "u.unit")
 			->whereRaw("sha1(report_rm_aux_others.id) = '$response_id_rra'")
 			->get();
 
@@ -420,6 +422,21 @@ class ProductionReportRmAuxOtherController extends Controller
 			->get();
 
 		if (!empty($data[0]) && !empty($data_pr[0])) {
+			$unit_name = 'Kg';
+			if (!empty($data[0]->unit_code)) {
+				$unit_name = $data[0]->unit_code;
+			} elseif (!empty($data[0]->type_product) && !empty($data[0]->id_master_products)) {
+				$productTable = $data[0]->type_product == 'RM' ? 'master_raw_materials' : 'master_tool_auxiliaries';
+				$unitObj = DB::table($productTable . ' as p')
+					->leftJoin('master_units as u', 'p.id_master_units', '=', 'u.id')
+					->where('p.id', '=', $data[0]->id_master_products)
+					->select('u.unit_code')
+					->first();
+				if (!empty($unitObj->unit_code)) {
+					$unit_name = $unitObj->unit_code;
+				}
+			}
+
 			// Get SO Barcodes from barcode_detail table linked through barcodes
 			$ms_barcodes_so = DB::table('barcode_detail as a')
 				->join('barcodes as b', 'a.id_barcode', '=', 'b.id')
@@ -433,7 +450,7 @@ class ProductionReportRmAuxOtherController extends Controller
 				->where('id', '!=', $data_pr[0]->id)
 				->sum('qty_use') ?? 0;
 
-			return view('production.entry_report_rm_aux_detail_edit_production_result', compact('data', 'data_pr', 'ms_barcodes_so', 'existing_qty_other'));
+			return view('production.entry_report_rm_aux_detail_edit_production_result', compact('data', 'data_pr', 'ms_barcodes_so', 'existing_qty_other', 'unit_name'));
 		} else {
 			return Redirect::to('/production-ent-report-rm-aux')->with('pesan_danger', 'There Is An Error.');
 		}
@@ -493,40 +510,10 @@ class ProductionReportRmAuxOtherController extends Controller
 			$new_qty_use = floatval($validatedData['qty_use']);
 
 			// Restore old usage
-			if (!empty($old_lot) && !empty($old_ext_lot)) {
-				$old_dgrnd = DB::table('detail_good_receipt_note_details as a')
-					->leftJoin('good_receipt_note_details as b', 'a.id_grn_detail', '=', 'b.id')
-					->where('b.lot_number', '=', $old_lot)
-					->where('a.ext_lot_number', '=', $old_ext_lot)
-					->select('a.id')
-					->first();
-
-				if ($old_dgrnd) {
-					DB::table('detail_good_receipt_note_details')
-						->where('id', '=', $old_dgrnd->id)
-						->update([
-							'qty_out' => DB::raw("qty_out - $old_qty_use")
-						]);
-				}
-			}
+			$this->adjustStockQtyOut($old_lot, $old_ext_lot, $old_qty_use, '-');
 
 			// Apply new usage
-			if (!empty($new_lot) && !empty($new_ext_lot)) {
-				$new_dgrnd = DB::table('detail_good_receipt_note_details as a')
-					->leftJoin('good_receipt_note_details as b', 'a.id_grn_detail', '=', 'b.id')
-					->where('b.lot_number', '=', $new_lot)
-					->where('a.ext_lot_number', '=', $new_ext_lot)
-					->select('a.id')
-					->first();
-
-				if ($new_dgrnd) {
-					DB::table('detail_good_receipt_note_details')
-						->where('id', '=', $new_dgrnd->id)
-						->update([
-							'qty_out' => DB::raw("qty_out + $new_qty_use")
-						]);
-				}
-			}
+			$this->adjustStockQtyOut($new_lot, $new_ext_lot, $new_qty_use, '+');
 
 			ProductionReportRmAuxOtherProductionResult::where('id', $data_pr[0]->id)
 				->update($validatedData);
@@ -560,22 +547,7 @@ class ProductionReportRmAuxOtherController extends Controller
 			$ext_lot = $data[0]->product;
 			$qty_use = floatval($data[0]->qty_use);
 
-			if (!empty($lot_number) && !empty($ext_lot)) {
-				$dgrnd = DB::table('detail_good_receipt_note_details as a')
-					->leftJoin('good_receipt_note_details as b', 'a.id_grn_detail', '=', 'b.id')
-					->where('b.lot_number', '=', $lot_number)
-					->where('a.ext_lot_number', '=', $ext_lot)
-					->select('a.id')
-					->first();
-
-				if ($dgrnd) {
-					DB::table('detail_good_receipt_note_details')
-						->where('id', '=', $dgrnd->id)
-						->update([
-							'qty_out' => DB::raw("qty_out - $qty_use")
-						]);
-				}
-			}
+			$this->adjustStockQtyOut($lot_number, $ext_lot, $qty_use, '-');
 
 			$delete = ProductionReportRmAuxOtherProductionResult::whereRaw("sha1(id) = '$id'")->delete();
 
@@ -610,22 +582,7 @@ class ProductionReportRmAuxOtherController extends Controller
 				->get();
 
 			foreach ($results as $result) {
-				if (!empty($result->lot_number) && !empty($result->product)) {
-					$dgrnd = DB::table('detail_good_receipt_note_details as a')
-						->leftJoin('good_receipt_note_details as b', 'a.id_grn_detail', '=', 'b.id')
-						->where('b.lot_number', '=', $result->lot_number)
-						->where('a.ext_lot_number', '=', $result->product)
-						->select('a.id')
-						->first();
-
-					if ($dgrnd) {
-						DB::table('detail_good_receipt_note_details')
-							->where('id', '=', $dgrnd->id)
-							->update([
-								'qty_out' => DB::raw("qty_out - " . floatval($result->qty_use))
-							]);
-					}
-				}
+				$this->adjustStockQtyOut($result->lot_number, $result->product, $result->qty_use, '-');
 			}
 
 			// Delete production results first
@@ -739,6 +696,7 @@ class ProductionReportRmAuxOtherController extends Controller
 		$query = DB::table('detail_good_receipt_note_details as a')
 			->leftJoin('good_receipt_note_details as b', 'a.id_grn_detail', '=', 'b.id')
 			->leftJoin($productTable . ' as c', 'b.id_master_products', '=', 'c.id')
+			->leftJoin('master_units as u', 'c.id_master_units', '=', 'u.id')
 			->whereRaw("a.qty > a.qty_out");
 
 		if ($all_product_lots || $all_product_lots === "true") {
@@ -756,11 +714,41 @@ class ProductionReportRmAuxOtherController extends Controller
 			$query->where('b.lot_number', '=', $lot_number);
 		}
 
-		$datas = $query->select('c.description', 'a.id', 'b.lot_number', 'a.ext_lot_number')
+		$datas = $query->select('c.description', 'a.id', 'b.lot_number', 'a.ext_lot_number', 'u.unit_code', 'u.unit')
 			->selectRaw('ROUND(a.qty-a.qty_out, 1) as sisa')
 			->get();
 
 		return response()->json($datas);
+	}
+
+	private function adjustStockQtyOut($lot_number, $ext_lot_number, $qty_use, $operation = '+')
+	{
+		if (empty($lot_number)) return;
+		$qty_use = floatval($qty_use);
+		if ($qty_use <= 0) return;
+
+		$query = DB::table('detail_good_receipt_note_details as a')
+			->leftJoin('good_receipt_note_details as b', 'a.id_grn_detail', '=', 'b.id')
+			->where('b.lot_number', '=', $lot_number);
+
+		if (!empty($ext_lot_number) && $ext_lot_number !== $lot_number) {
+			$query->where(function ($q) use ($ext_lot_number) {
+				$q->where('a.ext_lot_number', '=', $ext_lot_number)
+					->orWhere('a.ext_lot_number', '=', '')
+					->orWhereNull('a.ext_lot_number');
+			});
+		}
+
+		$dgrnd = $query->select('a.id')->first();
+
+		if ($dgrnd) {
+			$op = ($operation === '-') ? '-' : '+';
+			DB::table('detail_good_receipt_note_details')
+				->where('id', '=', $dgrnd->id)
+				->update([
+					'qty_out' => DB::raw("qty_out $op $qty_use")
+				]);
+		}
 	}
 	//END ENTRY REPORT RM AUX OTHERS
 }
