@@ -211,7 +211,7 @@ class ProductionReportRmAuxOtherController extends Controller
 	{
 		$data = ProductionReportRmAuxOther::leftJoin('sales_orders as s', 'report_rm_aux_others.id_sales_orders', '=', 's.id')
 			->leftJoin('master_units as u', 's.id_master_units', '=', 'u.id')
-			->select("report_rm_aux_others.*", "s.so_number", "s.type_product", "s.id_master_products", "s.qty as so_qty", "u.unit_code", "u.unit")
+			->select("report_rm_aux_others.*", "s.so_number", "s.type_product", "s.id_master_products", "s.qty as so_qty", "u.unit_code", "u.unit", "s.so_type")
 			->whereRaw("sha1(report_rm_aux_others.id) = '$response_id'")
 			->get();
 
@@ -410,7 +410,7 @@ class ProductionReportRmAuxOtherController extends Controller
 	{
 		$data = ProductionReportRmAuxOther::leftJoin('sales_orders as s', 'report_rm_aux_others.id_sales_orders', '=', 's.id')
 			->leftJoin('master_units as u', 's.id_master_units', '=', 'u.id')
-			->select("report_rm_aux_others.*", "s.type_product", "s.id_master_products", "s.qty as so_qty", "u.unit_code", "u.unit")
+			->select("report_rm_aux_others.*", "s.type_product", "s.id_master_products", "s.qty as so_qty", "u.unit_code", "u.unit", "s.so_type")
 			->whereRaw("sha1(report_rm_aux_others.id) = '$response_id_rra'")
 			->get();
 
@@ -650,6 +650,11 @@ class ProductionReportRmAuxOtherController extends Controller
 	{
 		$type_product = request('type_product');
 		$id_master_products = request('id_master_products');
+		$so_type = request('so_type');
+
+		if (strtoupper($type_product ?? '') === 'AUX' && strtoupper($so_type ?? '') === 'MACHINE') {
+			$type_product = 'Other';
+		}
 
 		$query = DB::table('good_receipt_note_details')
 			->where('id_master_products', '=', $id_master_products)
@@ -682,6 +687,11 @@ class ProductionReportRmAuxOtherController extends Controller
 		$type_product = request('type_product');
 		$id_master_products = request('id_master_products');
 		$all_product_lots = request('all_product_lots', false);
+		$so_type = request('so_type');
+
+		if (strtoupper($type_product ?? '') === 'AUX' && strtoupper($so_type ?? '') === 'MACHINE') {
+			$type_product = 'Other';
+		}
 
 		if ($type_product == 'RM') {
 			$productTable = 'master_raw_materials';

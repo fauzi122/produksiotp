@@ -320,6 +320,7 @@
 													var idMasterProducts = "{{ $data[0]->id_master_products }}";
 													var soQty = "{{ $data[0]->so_qty ?? 0 }}";
 													var unitName = "{{ $unit_name }}";
+													var soType = "{{ $data[0]->so_type ?? '' }}";
 													
 													var soQtyVal = parseFloat(soQty || 0);
 													if (soQtyVal > 0) {
@@ -358,7 +359,7 @@
 														$.ajax({
 															type: "GET",
 															url: "/json_get_barcodes_by_lot",
-															data: { all_product_lots: true, type_product: typeProduct, id_master_products: idMasterProducts, so_qty: soQty },
+															data: { all_product_lots: true, type_product: typeProduct, id_master_products: idMasterProducts, so_qty: soQty, so_type: soType },
 															dataType: "json",
 															success: function(response) {
 																var html = '<option value="">** Please Select an External Lot **</option>';
