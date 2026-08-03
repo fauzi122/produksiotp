@@ -95,6 +95,9 @@ class ProductionReportRmAuxOtherController extends Controller
 							<a target="_blank" href="/production-ent-report-rm-aux-detail/' . sha1($data->id) . '" class="btn btn-outline-info waves-effect waves-light">
 								<i class="bx bx-edit-alt" title="Edit"></i> EDIT
 							</a>
+							<a target="_blank" href="/production-ent-report-rm-aux-print/' . sha1($data->id) . '" class="btn btn-outline-dark waves-effect waves-light">
+								<i class="bx bx-printer" title="Print"></i> PRINT
+							</a>
 							<a onclick="' . $return_delete . '" href="/production-ent-report-rm-aux-delete/' . sha1($data->id) . '" class="btn btn-outline-danger waves-effect waves-light" onclick="return confirm(' . "'Anda yakin mau menghapus item ini ?'" . ')">
 								<i class="bx bx-trash-alt" title="Delete" ></i> DELETE
 							</a>
@@ -102,6 +105,9 @@ class ProductionReportRmAuxOtherController extends Controller
 					';
 				} else {
 					$tombol .= '
+							<a target="_blank" href="/production-ent-report-rm-aux-print/' . sha1($data->id) . '" class="btn btn-outline-dark waves-effect waves-light">
+								<i class="bx bx-printer" title="Print"></i> PRINT
+							</a>
 							<span class="badge bg-success">Closed</span>
 						</center>
 					';
@@ -758,6 +764,66 @@ class ProductionReportRmAuxOtherController extends Controller
 				->update([
 					'qty_out' => DB::raw("qty_out $op $qty_use")
 				]);
+		}
+	}
+
+	public function production_entry_report_rm_aux_print($response_id)
+	{
+		$data = ProductionReportRmAuxOther::leftJoin('master_customers AS e', 'report_rm_aux_others.id_master_customers', '=', 'e.id')
+			->leftJoin('master_employees AS f', 'report_rm_aux_others.operator', '=', 'f.id')
+			->leftJoin('master_employees AS g', 'report_rm_aux_others.ketua_regu', '=', 'g.id')
+			->leftJoin('master_employees AS k', 'report_rm_aux_others.known_by', '=', 'k.id')
+			->leftJoin('sales_orders AS h', 'report_rm_aux_others.id_sales_orders', '=', 'h.id')
+			->leftJoin('master_units AS u', 'h.id_master_units', '=', 'u.id')
+			->select(
+				'report_rm_aux_others.*',
+				'e.name AS customer_name',
+				'h.so_number',
+				'h.type_product',
+				'h.id_master_products',
+				'h.qty as so_qty',
+				'u.unit_code',
+				'u.unit'
+			)
+			->selectRaw('f.name AS operator_name')
+			->selectRaw('g.name AS ketua_regu_name')
+			->selectRaw('k.name AS known_by_name')
+			->whereRaw("sha1(report_rm_aux_others.id) = '$response_id'")
+			->get();
+
+		if (!empty($data[0])) {
+			$unit_name = 'Kg';
+			if (!empty($data[0]->unit_code)) {
+				$unit_name = $data[0]->unit_code;
+			} elseif (!empty($data[0]->type_product) && !empty($data[0]->id_master_products)) {
+				$productTable = $data[0]->type_product == 'RM' ? 'master_raw_materials' : 'master_tool_auxiliaries';
+				$unitObj = DB::table($productTable . ' as p')
+					->leftJoin('master_units as u', 'p.id_master_units', '=', 'u.id')
+					->where('p.id', '=', $data[0]->id_master_products)
+					->select('u.unit_code')
+					->first();
+				if (!empty($unitObj->unit_code)) {
+					$unit_name = $unitObj->unit_code;
+				}
+			}
+
+			$data_detail_production = DB::table('report_rm_aux_other_production_results AS a')
+				->leftJoin('sales_orders AS s', 'a.id_sales_orders', '=', 's.id')
+				->select('a.*', 's.so_number')
+				->whereRaw("sha1(a.id_report_rm_aux_others) = '$response_id'")
+				->get();
+
+			// Audit Log
+			$username = auth()->user()->email;
+			$ipAddress = $_SERVER['REMOTE_ADDR'];
+			$location = '0';
+			$access_from = Browser::browserName();
+			$activity = 'Print Entry Report RM, Aux, Others ID="' . $data[0]->id . '"';
+			$this->auditLogs($username, $ipAddress, $location, $access_from, $activity);
+
+			return view('production.entry_report_rm_aux_print', compact('data', 'data_detail_production', 'unit_name'));
+		} else {
+			return Redirect::to('/production-ent-report-rm-aux')->with('pesan_danger', 'There Is An Error.');
 		}
 	}
 	//END ENTRY REPORT RM AUX OTHERS

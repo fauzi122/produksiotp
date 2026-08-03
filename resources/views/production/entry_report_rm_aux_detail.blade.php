@@ -8,8 +8,12 @@
 		<div class="row">
 			<div class="col-12">
 				<div class="page-title-box d-sm-flex align-items-center justify-content-between">
-					<a href="/production-ent-report-rm-aux" class="btn btn-dark waves-effect waves-light mb-3">
-						<i class="bx bx-list-ul" title="Back"></i> REPORT RM, AUX, OTHERS</a>
+					<div>
+						<a href="/production-ent-report-rm-aux" class="btn btn-dark waves-effect waves-light mb-3">
+							<i class="bx bx-list-ul" title="Back"></i> REPORT RM, AUX, OTHERS</a>
+						<a target="_blank" href="/production-ent-report-rm-aux-print/{{ Request::segment(2) }}" class="btn btn-secondary waves-effect waves-light mb-3 ms-2">
+							<i class="bx bx-printer" title="Print"></i> PRINT</a>
+					</div>
 					<div class="page-title-right">
 						<ol class="breadcrumb m-0">
 							<li class="breadcrumb-item"><a href="javascript: void(0);">Production</a></li>
