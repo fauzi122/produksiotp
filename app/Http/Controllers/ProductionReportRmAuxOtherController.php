@@ -658,25 +658,22 @@ class ProductionReportRmAuxOtherController extends Controller
 		$id_master_products = request('id_master_products');
 		$so_type = request('so_type');
 
-		if (strtoupper($type_product ?? '') === 'AUX' && strtoupper($so_type ?? '') === 'MACHINE') {
-			$type_product = 'Other';
-		}
-
 		$query = DB::table('good_receipt_note_details')
 			->where('id_master_products', '=', $id_master_products)
-			->where('qc_passed', '=', 'Y')
 			->whereNotNull('lot_number')
 			->where('lot_number', '!=', '')
 			->where('lot_number', '!=', '0');
 
 		if ($type_product == 'RM') {
-			$query->where('type_product', '=', 'RM');
-		} else if (in_array($type_product, ['AUX', 'TA'])) {
-			$query->whereIn('type_product', ['AUX', 'TA']);
-		} else if (in_array($type_product, ['Other', 'OTH'])) {
-			$query->whereIn('type_product', ['Other', 'OTH']);
-		} else if (!empty($type_product)) {
-			$query->where('type_product', '=', $type_product);
+			$query->where('qc_passed', '=', 'Y')
+				->where('type_product', '=', 'RM');
+		} else {
+			$query->where(function ($q) {
+				$q->where('qc_passed', '=', 'Y')
+					->orWhereNull('qc_passed')
+					->orWhere('qc_passed', '=', '');
+			});
+			$query->whereIn('type_product', ['AUX', 'TA', 'Other', 'OTH', 'SPAREPART', 'SPAREPARTS', 'MACHINE']);
 		}
 
 		$datas = $query->select('lot_number')
@@ -694,10 +691,6 @@ class ProductionReportRmAuxOtherController extends Controller
 		$id_master_products = request('id_master_products');
 		$all_product_lots = request('all_product_lots', false);
 		$so_type = request('so_type');
-
-		if (strtoupper($type_product ?? '') === 'AUX' && strtoupper($so_type ?? '') === 'MACHINE') {
-			$type_product = 'Other';
-		}
 
 		if ($type_product == 'RM') {
 			$productTable = 'master_raw_materials';
@@ -719,12 +712,8 @@ class ProductionReportRmAuxOtherController extends Controller
 			$query->where('b.id_master_products', '=', $id_master_products);
 			if ($type_product == 'RM') {
 				$query->where('b.type_product', '=', 'RM');
-			} else if (in_array($type_product, ['AUX', 'TA'])) {
-				$query->whereIn('b.type_product', ['AUX', 'TA']);
-			} else if (in_array($type_product, ['Other', 'OTH'])) {
-				$query->whereIn('b.type_product', ['Other', 'OTH']);
-			} else if (!empty($type_product)) {
-				$query->where('b.type_product', '=', $type_product);
+			} else {
+				$query->whereIn('b.type_product', ['AUX', 'TA', 'Other', 'OTH', 'SPAREPART', 'SPAREPARTS', 'MACHINE']);
 			}
 		} else {
 			$query->where('b.lot_number', '=', $lot_number);
