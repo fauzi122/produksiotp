@@ -2436,9 +2436,14 @@ class ProductionReportBagMakingController extends Controller
 					->on('a.id_report_bags', '=', 'c.id_report_bags')
 					->whereRaw('c.wrap_pcs!=""');
 			})
-			->leftJoin('barcode_detail as d', 'a.barcode_start', '=', 'd.barcode_number')
 			->leftJoin('barcode_detail as e', 'a.barcode', '=', 'e.barcode_number')
-			->select('a.*', 'b.wo_number', 'd.join')
+			->select(
+				'a.id', 'a.start_time', 'a.finish_time',
+				'a.barcode_start', 'a.barcode', 'a.note',
+				'a.weight_starting', 'a.waste', 'a.amount_result', 'a.wrap', 'a.keterangan',
+				'a.id_work_orders', 'a.id_report_bags',
+				'b.wo_number'
+			)
 			->selectRaw('e.used_next_shift AS used_next_shift_barcode')
 			->selectRaw('COUNT(c.wrap_pcs) AS count_detail_pr')
 			->selectRaw('SUM(c.wrap_pcs) AS sum_wrap_pcs_pr')

@@ -2084,8 +2084,13 @@ class ProductionReportSlittingController extends Controller
 	{
 		$query = DB::table('report_sf_production_results AS a')
 			->leftJoin('work_orders AS b', 'a.id_work_orders', '=', 'b.id')
-			->leftJoin('barcode_detail as c', 'a.barcode_start', '=', 'c.barcode_number')
-			->select('a.*', 'b.wo_number', 'c.used_next_shift', 'c.join')
+			->select(
+				'a.id', 'a.start_time', 'a.finish_time',
+				'a.barcode_start', 'a.barcode', 'a.type_result', 'a.note',
+				'a.thickness', 'a.length', 'a.width', 'a.weight',
+				'a.status', 'a.waste', 'a.cause_waste',
+				'b.wo_number'
+			)
 			->whereRaw("sha1(a.id_report_sfs) = '$response_id'")
 			->orderBy('a.id', 'asc');
 
