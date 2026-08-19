@@ -1273,103 +1273,20 @@
 										<h4 class="card-title">Table Detail</h4>
 
 									</div>
-									<div class="card-body p-4">
-										@if(!empty($data_detail_production[0]))
-										<div class="table-responsive">
-											<table id="datatable"
-												class="table table-bordered dt-responsive  nowrap w-100">
-												<thead>
-													<tr>
-													<tr>
-														<th width="20%">Start / Finish</th>
-														<th width="40%">Product Info</th>
-														<th width="20%">Weight Info</th>
-														<th width="10%">Aksi</th>
-													</tr>
-												</thead>
-												<tbody>
-													@foreach ($data_detail_production as $data_detail)
-													<tr>
-														<td>
-															At : <b>{{ $data_detail->start_time }}</b> /
-															Until : <b>{{ $data_detail->finish_time }}</b>
-														</td>
-														<?php $product = explode('|', $data_detail->note) ; ?>
-														<td>
-															<p>
-																Barcode Start : <b>{{ $data_detail->barcode_start
-																	}}</b><br>
-																Barcode : <b>{{ $data_detail->barcode }}</b><br><br>
-																Work Orders : <b>{{ $data_detail->wo_number }}</b><br>
-																<code>Type Result : <b>{{ $data_detail->type_result }}</b></code><br>
-															<footer class="blockquote-footer">Product : <cite><b>{{
-																		$product['2'] }}</b></cite></footer>
-															</p>
-														</td>
-														<?php 
-																if($data_detail->status=="Good"){
-																	$colors = "success";
-																}else if($data_detail->status=="Hold"){
-																	$colors = "warning";
-																}else{
-																	$colors = "danger";
-																}
-															
-															?>
-														<td>
-															Thickness : <b>{{ $data_detail->thickness }}</b> <br>
-															Length : <b>{{ $data_detail->length }}</b> <br>
-															Width : <b>{{ $data_detail->width }}</b> <br>
-															Weight : <b>{{ $data_detail->weight }}</b> <br><br>
-															Status : <b class="text-{{ $colors }}">{{
-																$data_detail->status }}</b> <br><br>
-															Waste : <b>{{
-																!empty($data_detail->waste)?$data_detail->waste:'-';
-																}}</b> <br>
-															Cause Waste : <b>{{
-																!empty($data_detail->cause_waste)?$data_detail->cause_waste:'-';
-																}}</b> <br>
-														</td>
-
-
-														<td>
-															<center>
-																<form
-																	action="/production-entry-report-folding-detail-production-result-delete#detailTableSection"
-																	method="post" class="d-inline"
-																	enctype="multipart/form-data">
-																	@csrf
-																	<input type="hidden" class="form-control"
-																		name="token_rf"
-																		value="{{ Request::segment(2) }}">
-																	<button type="submit" class="btn btn-danger"
-																		onclick="return confirm('Are you sure to delete this item ?')"
-																		value="{{ sha1($data_detail->id) }}"
-																		name="hapus_detail">
-																		<i class="bx bx-trash-alt" title="Delete"></i>
-																	</button>
-																</form>
-																<a href="/production-entry-report-folding-detail-production-result-edit/{{ Request::segment(2) }}/{{ sha1($data_detail->id) }}"
-																	class="btn btn-info waves-effect waves-light">
-																	<i class="bx bx-edit-alt" title="Edit"></i>
-																</a>
-															</center>
-														</td>
-
-													</tr>
-													@endforeach
-												</tbody>
-											</table>
-										</div>
-										@else
-										<div class="row">
-											<div class="col-lg-12 text-center">
-												<label>Data Tidak Tersedia</label>
-											</div>
-										</div>
-
-										@endif
+									<div class="card-body p-4" id="detailTableSection">
+									<div class="table-responsive">
+										<table id="datatable-detail-production" class="table table-bordered dt-responsive nowrap w-100">
+											<thead>
+												<tr>
+													<th width="20%">Start / Finish</th>
+													<th width="40%">Product Info</th>
+													<th width="20%">Weight Info</th>
+													<th width="10%">Aksi</th>
+												</tr>
+											</thead>
+										</table>
 									</div>
+								</div>
 								</div>
 							</div>
 						</div>
@@ -1412,3 +1329,24 @@
 	}
 </style>
 @endsection
+@push('scripts')
+<script>
+	$(document).ready(function () {
+		$('#datatable-detail-production').DataTable({
+			processing: true,
+			serverSide: true,
+			ajax: '/production-ent-report-folding-detail-json/{{ Request::segment(2) }}',
+			columns: [
+				{ data: 'start_finish', name: 'a.start_time', orderable: false },
+				{ data: 'product_info', name: 'a.barcode_start', orderable: false },
+				{ data: 'weight_info', name: 'a.weight', orderable: false },
+				{ data: 'aksi', name: 'aksi', orderable: false, searchable: false },
+			],
+			pageLength: 5,
+			ordering: false,
+			searching: false,
+			lengthChange: false,
+		});
+	});
+</script>
+@endpush

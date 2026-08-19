@@ -1238,7 +1238,6 @@
 
 									</div>
 									<div class="card-body p-4" id="detailTableSection">
-										@if(!empty($data_detail_production[0]))
 										<div class="alert alert-danger alert-dismissible alert-label-icon label-arrow fade show"
 											role="alert">
 											<i
@@ -1250,108 +1249,16 @@
 										</div>
 										<div class="table-responsive">
 											<table id="datatable-production-result"
-												class="table table-bordered dt-responsive  nowrap w-100">
+												class="table table-bordered dt-responsive nowrap w-100">
 												<thead>
-													<tr>
 													<tr>
 														<th width="20%">Start / Finish</th>
 														<th width="40%">Production Info</th>
 														<th width="10%">Aksi</th>
 													</tr>
 												</thead>
-												<tbody>
-													@foreach ($data_detail_production as $data_detail)
-													<tr>
-														<td>
-															At : <b>{{ $data_detail->start_time }}</b> /
-															Until : <b>{{ $data_detail->finish_time }}</b>
-															<br><br>
-															Detail <b>Production Result</b> :<br>
-															@if(( $data_detail->count_detail_pr == $data_detail->wrap
-															)&&( $data_detail->sum_wrap_pcs_pr ==
-															$data_detail->amount_result ))
-															<span class="badge bg-success-subtle text-success">
-																Sudah Di Sesuaikan
-															</span>
-															@else
-															<span class="badge bg-danger-subtle text-danger">
-																Belum Di Sesuaikan
-															</span>
-															@if( $data_detail->sum_wrap_pcs_pr !=
-															$data_detail->amount_result )
-															<br>
-															<code>
-																		<b>amount result</b> dan total <b>wrap pcs</b> <br>tidak sesuai.
-																	</code>
-															@endif
-															@endif
-														</td>
-														<?php $product = explode('|', $data_detail->note) ; ?>
-														<td>
-															<p>
-																Barcode Start : <b>{{ $data_detail->barcode_start
-																	}}</b><br>
-																Barcode End : <b>{{ $data_detail->barcode }}</b><br><br>
-																Work Orders : <b>{{ $data_detail->wo_number }}</b><br>
-															<footer class="blockquote-footer">Product : <cite><b>{{
-																		$product['2'] }}</b></cite></footer>
-															<footer class="blockquote-footer">Weight Starting :
-																<cite><b>{{ $data_detail->weight_starting }}</b>
-																	Kg</cite>
-															</footer>
-															<?php if($data_detail->waste!=''){ ?>
-															<footer class="blockquote-footer">Waste : <cite><b>{{
-																		$data_detail->waste }}</b> Kg</cite></footer>
-															<?php }; ?>
-															Amount Result : <b>{{ $data_detail->amount_result }}</b>
-															Pcs<br>
-															Wrap : <b>{{ $data_detail->wrap }}</b> Bungkus<br><br>
-															<?php if($data_detail->keterangan!=''){ ?>
-															<footer class="blockquote-footer">Keterangan : <cite><b>{{
-																		$data_detail->keterangan }}</b></cite></footer>
-															<?php }; ?>
-															</p>
-														</td>
-
-
-														<td>
-															<center>
-																<form
-																	action="/production-entry-report-bag-making-detail-production-result-delete#detailTableSection"
-																	method="post" class="d-inline delete-form"
-																	enctype="multipart/form-data">
-																	@csrf
-																	<input type="hidden" name="token_rb"
-																		value="{{ Request::segment(2) }}">
-																	<input type="hidden" name="hapus_detail"
-																		value="{{ sha1($data_detail->id) }}">
-																	<button type="submit"
-																		class="btn btn-danger btn-delete"
-																		onclick="return confirm('Are you sure to delete this item ?');">
-																		<i class="bx bx-trash-alt" title="Delete"></i>
-																	</button>
-																</form>
-																<a target="_blank"
-																	href="/production-entry-report-bag-making-detail-production-result-edit/{{ Request::segment(2) }}/{{ sha1($data_detail->id) }}"
-																	class="btn btn-info waves-effect waves-light">
-																	<i class="bx bx-edit-alt" title="Edit"></i>
-																</a>
-															</center>
-														</td>
-
-													</tr>
-													@endforeach
-												</tbody>
 											</table>
 										</div>
-										@else
-										<div class="row">
-											<div class="col-lg-12 text-center">
-												<label>Data Tidak Tersedia</label>
-											</div>
-										</div>
-
-										@endif
 									</div>
 								</div>
 							</div>
@@ -1516,17 +1423,21 @@
 @push('scripts')
 <script>
 	$(document).ready(function() {
-		// Initialize DataTable for production result table
-		if ($('#datatable-production-result').length) {
-			$('#datatable-production-result').DataTable({
-				"paging": true,
-				"ordering": false,
-				"info": true,
-				"searching": false,
-				"lengthChange": false,
-				"pageLength": 10
-			});
-		}
+		// Initialize DataTable for production result table with server-side processing
+		$('#datatable-production-result').DataTable({
+			processing: true,
+			serverSide: true,
+			ajax: '/production-ent-report-bag-making-detail-json/{{ Request::segment(2) }}',
+			columns: [
+				{ data: 'start_finish', name: 'a.start_time', orderable: false },
+				{ data: 'production_info', name: 'a.barcode_start', orderable: false },
+				{ data: 'aksi', name: 'aksi', orderable: false, searchable: false },
+			],
+			pageLength: 5,
+			ordering: false,
+			searching: false,
+			lengthChange: false,
+		});
 
 		// Initialize DataTable for waste table
 		if ($('#datatable-waste').length) {
@@ -1540,7 +1451,6 @@
 			});
 		}
 
-		// Ensure delete buttons work properly
 		$('.delete-form').on('submit', function(e) {
 			// Let the browser handle the confirm dialog and submission
 			return true;

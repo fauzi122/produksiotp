@@ -606,6 +606,8 @@ class ProductionReportBagMakingController extends Controller
 					->selectRaw('SUM(c.wrap_pcs) AS sum_wrap_pcs_pr')
 					->whereRaw("sha1(a.id_report_bags) = '$response_id'")
 					->groupBy('a.id')
+					->orderBy('a.id', 'desc')
+					->limit(1)
 					->get();
 
 				/*
@@ -2425,6 +2427,50 @@ class ProductionReportBagMakingController extends Controller
 			return Redirect::to('/production-entry-report-bag-making-detail-production-result-edit/' . $response_id_rb . '/' . $response_id_rb_pr)->with('pesan_danger', 'There Is An Error.');
 		}
 	}
+	public function production_entry_report_bag_making_detail_json($response_id)
+	{
+		$query = DB::table('report_bag_production_results AS a')
+			->leftJoin('work_orders AS b', 'a.id_work_orders', '=', 'b.id')
+			->leftJoin('report_bag_production_result_details AS c', function ($join) {
+				$join->on('a.id', '=', 'c.id_report_bag_production_results')
+					->on('a.id_report_bags', '=', 'c.id_report_bags')
+					->whereRaw('c.wrap_pcs!=""');
+			})
+			->leftJoin('barcode_detail as d', 'a.barcode_start', '=', 'd.barcode_number')
+			->leftJoin('barcode_detail as e', 'a.barcode', '=', 'e.barcode_number')
+			->select('a.*', 'b.wo_number', 'd.join')
+			->selectRaw('e.used_next_shift AS used_next_shift_barcode')
+			->selectRaw('COUNT(c.wrap_pcs) AS count_detail_pr')
+			->selectRaw('SUM(c.wrap_pcs) AS sum_wrap_pcs_pr')
+			->whereRaw("sha1(a.id_report_bags) = '$response_id'")
+			->groupBy('a.id')
+			->orderBy('a.id', 'asc');
+
+		return DataTables::of($query)
+			->addColumn('start_finish', function ($row) {
+				$statusBadge = (($row->count_detail_pr == $row->wrap) && ($row->sum_wrap_pcs_pr == $row->amount_result))
+					? '<span class="badge bg-success-subtle text-success">Sudah Di Sesuaikan</span>'
+					: '<span class="badge bg-danger-subtle text-danger">Belum Di Sesuaikan</span>';
+				return 'At : <b>' . $row->start_time . '</b> / Until : <b>' . $row->finish_time . '</b><br><br>Detail <b>Production Result</b> :<br>' . $statusBadge;
+			})
+			->addColumn('production_info', function ($row) {
+				$product = explode('|', $row->note);
+				$productName = isset($product[2]) ? $product[2] : '';
+				$wasteHtml = $row->waste != '' ? '<footer class="blockquote-footer">Waste : <cite><b>' . $row->waste . '</b> Kg</cite></footer>' : '';
+				$keteranganHtml = $row->keterangan != '' ? '<footer class="blockquote-footer">Keterangan : <cite><b>' . $row->keterangan . '</b></cite></footer>' : '';
+				return '<p>Barcode Start : <b>' . $row->barcode_start . '</b><br>Barcode End : <b>' . $row->barcode . '</b><br><br>Work Orders : <b>' . $row->wo_number . '</b><br><footer class="blockquote-footer">Product : <cite><b>' . $productName . '</b></cite></footer><footer class="blockquote-footer">Weight Starting : <cite><b>' . $row->weight_starting . '</b> Kg</cite></footer>' . $wasteHtml . 'Amount Result : <b>' . $row->amount_result . '</b> Pcs<br>Wrap : <b>' . $row->wrap . '</b> Bungkus<br><br>' . $keteranganHtml . '</p>';
+			})
+			->addColumn('aksi', function ($row) use ($response_id) {
+				$idSha = sha1($row->id);
+				$csrf = csrf_field();
+				$deleteHtml = '<form action="/production-entry-report-bag-making-detail-production-result-delete" method="post" class="d-inline delete-form" enctype="multipart/form-data">' . $csrf . '<input type="hidden" name="token_rb" value="' . $response_id . '"><input type="hidden" name="hapus_detail" value="' . $idSha . '"><button type="submit" class="btn btn-danger btn-delete" onclick="return confirm(\'Are you sure to delete this item ?\');"><i class="bx bx-trash-alt" title="Delete"></i></button></form>';
+				$editHtml = '<a target="_blank" href="/production-entry-report-bag-making-detail-production-result-edit/' . $response_id . '/' . $idSha . '" class="btn btn-info waves-effect waves-light"><i class="bx bx-edit-alt" title="Edit"></i></a>';
+				return '<center>' . $deleteHtml . $editHtml . '</center>';
+			})
+			->rawColumns(['start_finish', 'production_info', 'aksi'])
+			->make(true);
+	}
+
 	//END ENTRY REPORT BLOW
 
 

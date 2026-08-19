@@ -554,7 +554,8 @@ class ProductionReportSlittingController extends Controller
 					->leftJoin('barcode_detail as c', 'a.barcode_start', '=', 'c.barcode_number')
 					->select('a.*', 'b.wo_number', 'c.used_next_shift', 'c.join')
 					->whereRaw("sha1(a.id_report_sfs) = '$response_id'")
-					->orderBy('a.id', 'asc')
+					->orderBy('a.id', 'desc')
+					->limit(1)
 					->get();
 
 				// Tinggal tambahkan query where nya jika detail sudah ada, wo yg tampil tidak boleh berbeda	
@@ -2079,5 +2080,42 @@ class ProductionReportSlittingController extends Controller
 			]
 		]);
 	}
+	public function production_entry_report_slitting_detail_json($response_id)
+	{
+		$query = DB::table('report_sf_production_results AS a')
+			->leftJoin('work_orders AS b', 'a.id_work_orders', '=', 'b.id')
+			->leftJoin('barcode_detail as c', 'a.barcode_start', '=', 'c.barcode_number')
+			->select('a.*', 'b.wo_number', 'c.used_next_shift', 'c.join')
+			->whereRaw("sha1(a.id_report_sfs) = '$response_id'")
+			->orderBy('a.id', 'asc');
+
+		return DataTables::of($query)
+			->addColumn('start_finish', function ($row) {
+				return 'At : <b>' . $row->start_time . '</b> / Until : <b>' . $row->finish_time . '</b>';
+			})
+			->addColumn('product_info', function ($row) {
+				$product = explode('|', $row->note);
+				$productName = isset($product[2]) ? $product[2] : '';
+				return '<p>Barcode Start : <b>' . $row->barcode_start . '</b><br>Barcode : <b>' . $row->barcode . '</b><br><br>Work Orders : <b>' . $row->wo_number . '</b><br><code>Type Result : <b>' . $row->type_result . '</b></code><br><footer class="blockquote-footer">Product : <cite><b>' . $productName . '</b></cite></footer></p>';
+			})
+			->addColumn('weight_info', function ($row) {
+				if ($row->status == 'Good') $colors = 'success';
+				elseif ($row->status == 'Hold') $colors = 'warning';
+				else $colors = 'danger';
+				$waste = !empty($row->waste) ? $row->waste : '-';
+				$cause_waste = !empty($row->cause_waste) ? $row->cause_waste : '-';
+				return 'Thickness : <b>' . $row->thickness . '</b> <br>Length : <b>' . $row->length . '</b> <br>Width : <b>' . $row->width . '</b> <br>Weight : <b>' . $row->weight . '</b> <br><br>Status : <b class="text-' . $colors . '">' . $row->status . '</b> <br><br>Waste : <b>' . $waste . '</b> <br>Cause Waste : <b>' . $cause_waste . '</b> <br>';
+			})
+			->addColumn('aksi', function ($row) use ($response_id) {
+				$idSha = sha1($row->id);
+				$csrf = csrf_field();
+				$deleteHtml = '<form action="/production-entry-report-slitting-detail-production-result-delete" method="post" class="d-inline" enctype="multipart/form-data">' . $csrf . '<input type="hidden" name="token_rs" value="' . $response_id . '"><button type="submit" class="btn btn-danger" onclick="return confirm(\'Are you sure to delete this item ?\')" value="' . $idSha . '" name="hapus_detail"><i class="bx bx-trash-alt" title="Delete"></i></button></form>';
+				$editHtml = '<a href="/production-entry-report-slitting-detail-production-result-edit/' . $response_id . '/' . $idSha . '" class="btn btn-info waves-effect waves-light"><i class="bx bx-edit-alt" title="Edit"></i></a>';
+				return '<center>' . $deleteHtml . $editHtml . '</center>';
+			})
+			->rawColumns(['start_finish', 'product_info', 'weight_info', 'aksi'])
+			->make(true);
+	}
+
 	//END ENTRY REPORT BLOW
 }

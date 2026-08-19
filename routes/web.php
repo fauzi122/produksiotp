@@ -137,6 +137,7 @@ Route::middleware(['auth', 'clear.permission.cache', 'permission:Produksi|Produk
 	Route::post('/production-entry-report-slitting-detail-production-result-delete', [ProductionReportSlittingController::class, 'production_entry_report_slitting_detail_production_result_delete'])->name('production_entry_report_slitting_detail_production_result_delete');
 
 
+	Route::get('/production-ent-report-slitting-detail-json/{id}', [ProductionReportSlittingController::class, 'production_entry_report_slitting_detail_json'])->name('production_entry_report_slitting_detail_json');
 	Route::get('/production-ent-report-slitting-print/{id}', [ProductionReportSlittingController::class, 'production_entry_report_slitting_print'])->name('production_entry_report_slitting_print');
 	//END REPORT SLITTING
 
@@ -171,6 +172,7 @@ Route::middleware(['auth', 'clear.permission.cache', 'permission:Produksi|Produk
 	Route::get('/production-entry-report-folding-unposted/{id}', [ProductionReportFoldingController::class, 'production_entry_report_folding_unposted'])->name('production_entry_report_folding_unposted');
 	Route::get('/production-ent-report-folding-delete/{id}', [ProductionReportFoldingController::class, 'production_entry_report_folding_delete'])->name('production_entry_report_folding_delete');
 
+	Route::get('/production-ent-report-folding-detail-json/{id}', [ProductionReportFoldingController::class, 'production_entry_report_folding_detail_json'])->name('production_entry_report_folding_detail_json');
 	Route::get('/production-ent-report-folding-print/{id}', [ProductionReportFoldingController::class, 'production_entry_report_folding_print'])->name('production_entry_report_folding_print');
 	//END REPORT FOLDING
 
@@ -209,6 +211,7 @@ Route::middleware(['auth', 'clear.permission.cache', 'permission:Produksi|Produk
 	Route::post('/production-entry-report-bag-making-wrap-add', [ProductionReportBagMakingController::class, 'production_entry_report_bag_making_wrap_add'])->name('production_entry_report_bag_making_wrap_add');
 	Route::post('/production-entry-report-bag-making-wrap-edit', [ProductionReportBagMakingController::class, 'production_entry_report_bag_making_wrap_edit'])->name('production_entry_report_bag_making_wrap_edit');
 	Route::post('/production-entry-report-bag-making-wrap-delete', [ProductionReportBagMakingController::class, 'production_entry_report_bag_making_wrap_delete'])->name('production_entry_report_bag_making_wrap_delete');
+	Route::get('/production-ent-report-bag-making-detail-json/{id}', [ProductionReportBagMakingController::class, 'production_entry_report_bag_making_detail_json'])->name('production_entry_report_bag_making_detail_json');
 	//END REPORT BAG MAKING
 
 	//START REPORT RM, AUX, OTHERS
