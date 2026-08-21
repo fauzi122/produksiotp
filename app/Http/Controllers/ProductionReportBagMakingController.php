@@ -1025,31 +1025,29 @@ class ProductionReportBagMakingController extends Controller
 									->update($updatedDataBE);
 							}
 
-							//INSERT DETAIL RESULT
+							//INSERT DETAIL RESULT (bulk insert untuk performa)
+							$now = date('Y-m-d H:i:s');
+							$bulk_details = [];
 							for ($i = 0; $i < $hasil; $i++) {
-								$data_detail = array(
+								$bulk_details[] = [
 									'id_report_bags' => $response->id_report_bags,
 									'id_report_bag_production_results' => $response->id,
 									'wrap_pcs' => $pcs_wrap,
-									//'barcode' => '',
-									//'keterangan' => '',
-									'created_at' => date('Y-m-d H:i:s'),
-									'updated_at' => date('Y-m-d H:i:s')
-								);
-								ProductionEntryReportBagMakingProductionResultDetail::create($data_detail);
+									'created_at' => $now,
+									'updated_at' => $now,
+								];
 							}
-							//INSERT SISA DETAIL RESULT
 							if ($sisa > 0) {
-								$data_detail = array(
+								$bulk_details[] = [
 									'id_report_bags' => $response->id_report_bags,
 									'id_report_bag_production_results' => $response->id,
 									'wrap_pcs' => $sisa,
-									//'barcode' => '',
-									//'keterangan' => '',
-									'created_at' => date('Y-m-d H:i:s'),
-									'updated_at' => date('Y-m-d H:i:s')
-								);
-								ProductionEntryReportBagMakingProductionResultDetail::create($data_detail);
+									'created_at' => $now,
+									'updated_at' => $now,
+								];
+							}
+							if (!empty($bulk_details)) {
+								DB::table('report_bag_production_result_details')->insert($bulk_details);
 							}
 
 							//PENGURANGAN STOCK WIP/FG
