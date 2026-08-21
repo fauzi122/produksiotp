@@ -10,7 +10,7 @@ use RealRashid\SweetAlert\Facades\Alert;
 use Browser;
 use Illuminate\Support\Facades\Crypt;
 //use Yajra\DataTables\Facades\Datatables;
-use DataTables; //test test test test 
+use DataTables; //test test test test
 
 // Model
 //START REQUEST SPAREPART AND AUXILIARIES
@@ -43,7 +43,7 @@ class ProductionReportFoldingController extends Controller
                 ->orderBy('report_sfs.created_at', 'desc')
                 ->get();
 		*/
-		//Audit Log		
+		//Audit Log
 		$username = auth()->user()->email;
 		$ipAddress = $_SERVER['REMOTE_ADDR'];
 		$location = '0';
@@ -115,7 +115,7 @@ class ProductionReportFoldingController extends Controller
 				if ($data->status == 'Un Posted') {
 					$update = '
 						<a data-bs-toggle="modal" onclick="showUpdateStock(' . $id . ')" data-bs-target="#modal_update_stock" class="btn btn-success waves-effect btn-label waves-light"><i class="bx bx-sync label-icon"></i>  Update Stock</a>
-						
+
 						<!--a href="#" class="btn btn-success waves-effect btn-label waves-light"><i class="bx bx-sync label-icon"></i>  Update Stock</a><br-->
 						<!--p class="mt-2"><code>Result : </code><br>
 						<footer class="blockquote-footer">Good : <cite>20</cite></footer>
@@ -124,7 +124,7 @@ class ProductionReportFoldingController extends Controller
 						</p-->';
 				} else {
 					$update = '
-						<a data-bs-toggle="modal" onclick="showUpdateStockInfo(' . $id . ')" data-bs-target="#modal_update_stock_info" class="btn btn-info waves-effect btn-label waves-light"><i class="bx bx-info-circle  label-icon"></i>  Stock Updated</a><br>						
+						<a data-bs-toggle="modal" onclick="showUpdateStockInfo(' . $id . ')" data-bs-target="#modal_update_stock_info" class="btn btn-info waves-effect btn-label waves-light"><i class="bx bx-info-circle  label-icon"></i>  Stock Updated</a><br>
 						<a onclick="' . $return_unposted . '" href="/production-entry-report-folding-unposted/' . sha1($data->id) . '" class="btn btn-primary waves-effect btn-label waves-light mt-1" onclick="return confirm(' . "'Anda yakin unposted data ?'" . ')">
 							<i class="bx bx-reply label-icon"></i> Un Posted
 						</a>';
@@ -152,14 +152,14 @@ class ProductionReportFoldingController extends Controller
 							<a target="_blank" href="/production-ent-report-folding-print/' . sha1($data->id) . '" class="btn btn-dark waves-effect waves-light">
 								<i class="bx bx-printer" title="Print"></i> PRINT
 							</a>
-						</center>					
+						</center>
 					';
 				} else {
 					$tombol .= '
 							<a target="_blank" href="/production-ent-report-folding-print/' . sha1($data->id) . '" class="btn btn-dark waves-effect waves-light">
 								<i class="bx bx-printer" title="Print"></i> PRINT
 							</a>
-						</center>						
+						</center>
 					';
 				}
 
@@ -541,7 +541,7 @@ class ProductionReportFoldingController extends Controller
 				ProductionEntryReportSFPreparation::create($dataPreparation);
 			}
 
-			//Audit Log		
+			//Audit Log
 			$username = auth()->user()->email;
 			$ipAddress = $_SERVER['REMOTE_ADDR'];
 			$location = '0';
@@ -696,7 +696,7 @@ class ProductionReportFoldingController extends Controller
 			ProductionEntryReportSF::where('id', $data[0]->id)
 				->update($validatedData);
 
-			//Audit Log		
+			//Audit Log
 			$username = auth()->user()->email;
 			$ipAddress = $_SERVER['REMOTE_ADDR'];
 			$location = '0';
@@ -743,7 +743,7 @@ class ProductionReportFoldingController extends Controller
 				->where('id_report_sfs', $data[0]->id_report_sfs)
 				->update($updatedData);
 
-			//Audit Log		
+			//Audit Log
 			$username = auth()->user()->email;
 			$ipAddress = $_SERVER['REMOTE_ADDR'];
 			$location = '0';
@@ -784,7 +784,7 @@ class ProductionReportFoldingController extends Controller
 				->where('id_report_sfs', $data[0]->id_report_sfs)
 				->update($updatedData);
 
-			//Audit Log		
+			//Audit Log
 			$username = auth()->user()->email;
 			$ipAddress = $_SERVER['REMOTE_ADDR'];
 			$location = '0';
@@ -890,7 +890,7 @@ class ProductionReportFoldingController extends Controller
 
 					if (!empty($response)) {
 						//HARUS UPDATE STATUS BARCODE
-						//$instock_type = $type_wo[0] == 'WIP' ? 'In Stock SLT WIP' : 'In Stock SLT FG';		
+						//$instock_type = $type_wo[0] == 'WIP' ? 'In Stock SLT WIP' : 'In Stock SLT FG';
 
 						$updatedData['status'] = $_POST['status'] == "Good" ? 'In Stock FLD' : $_POST['status']; //pukul rata jenis nya join lagi berdasarkan wo
 
@@ -900,10 +900,10 @@ class ProductionReportFoldingController extends Controller
 						/*OLD
 						if(empty($_POST['used_next_shift']) || isset($_POST['join'])){
 							if(empty($_POST['used_next_shift'])){
-								$updatedDataBS['used_next_shift'] = '0';						
+								$updatedDataBS['used_next_shift'] = '0';
 							}
 							if(isset($_POST['join'])){
-								$updatedDataBS['join'] = $_POST['join'];	
+								$updatedDataBS['join'] = $_POST['join'];
 							}
 							DB::table('barcode_detail')
 							->where('barcode_number', $response->barcode_start)
@@ -978,7 +978,7 @@ class ProductionReportFoldingController extends Controller
 							}
 						}
 
-						//Audit Log		
+						//Audit Log
 						$username = auth()->user()->email;
 						$ipAddress = $_SERVER['REMOTE_ADDR'];
 						$location = '0';
@@ -1123,14 +1123,14 @@ class ProductionReportFoldingController extends Controller
 				/*
 				//Jika Barcode Bisa Digunakan Lagi, Sesuaikan status data barcode menjadi NULL
 				$updatedData['status'] = 'Un Used';
-				
+
 				DB::table('barcode_detail')
 				->where('barcode_number', $data->barcode)
 				->update($updatedData);
 				*/
 				if ($response) {
 
-					//$instock_type = $type_wo[0] == 'WIP' ? 'In Stock SLT WIP' : 'In Stock SLT FG';			
+					//$instock_type = $type_wo[0] == 'WIP' ? 'In Stock SLT WIP' : 'In Stock SLT FG';
 					$updatedData['status'] = $_POST['status'] == "Good" ? 'In Stock FLD' : $_POST['status'];
 
 					$response_barcode = DB::table('barcode_detail')
@@ -1270,7 +1270,7 @@ class ProductionReportFoldingController extends Controller
 						}
 					}
 
-					//Audit Log		
+					//Audit Log
 					$username = auth()->user()->email;
 					$ipAddress = $_SERVER['REMOTE_ADDR'];
 					$location = '0';
@@ -1365,7 +1365,7 @@ class ProductionReportFoldingController extends Controller
 					}
 				}
 
-				//Audit Log		
+				//Audit Log
 				$username = auth()->user()->email;
 				$ipAddress = $_SERVER['REMOTE_ADDR'];
 				$location = '0';
@@ -1410,7 +1410,7 @@ class ProductionReportFoldingController extends Controller
 			//$data_detail_waste = DB::table('report_blow_wastes')
 			//		->select('report_blow_wastes.*')
 			//		->whereRaw( "sha1(id_report_blows) = '$response_id'")
-			//		->get();      
+			//		->get();
 			$data_detail_production = DB::table('report_sf_production_results as a')
 				->leftJoin('report_sf_production_results as b', 'a.barcode_start', '=', 'b.barcode') //disesuaikan ke table sfs
 				->leftJoin('report_sfs as c', 'b.id_report_blows', '=', 'c.id') //disesuaikan ke table sfs
@@ -1418,9 +1418,9 @@ class ProductionReportFoldingController extends Controller
 				->whereRaw("sha1(a.id_report_sfs) = '$response_id'")
 				->select('b.note as order_name_blow', 'b.weight as weight_blow', 'd.wo_number', 'a.*')
 				->get(); //PERBAIKI QUERY DETAIL UNTUK GET WO DAN PRODUCT
-			/*		
+			/*
 			$table_product = $order_name[0] == 'WIP' ? 'master_wips' : 'master_product_fgs';
-			
+
 			$data_product = DB::table($table_product)
 					->select('*')
 					->where('id', $order_name[1])
@@ -1653,12 +1653,12 @@ class ProductionReportFoldingController extends Controller
 								'date' => date("Y-m-d"),
 								'barcode' => $data_update[0]->barcode_good,
 								'remarks' => 'From GOOD Posted'
-							]);	
+							]);
 							$responseGood = HistoryStock::create($validatedData);
 							*/
-							//if($responseGood){					
+							//if($responseGood){
 							$stock_akhir = $data_product[0]->stock - $data_update[0]->good; //STOK
-							$weight_akhir = $data_product[0]->weight_stock - $data_update[0]->weight_good; //WEIGTH		
+							$weight_akhir = $data_product[0]->weight_stock - $data_update[0]->weight_good; //WEIGTH
 
 							$responseMaster = DB::table($master_table)->where('id', $order_name[1])->update(array('weight_stock' => $weight_akhir, 'stock' => $stock_akhir, 'updated_at' => date('Y-m-d H:i:s')));
 							//}
@@ -1674,7 +1674,7 @@ class ProductionReportFoldingController extends Controller
 								'date' => date("Y-m-d"),
 								'barcode' => $data_update[0]->barcode_hold,
 								'remarks' => 'From HOLD Posted'
-							]);	
+							]);
 							$responseHold = HistoryStock::create($validatedData);
 						}
 						if($data_update[0]->reject>0){
@@ -1687,7 +1687,7 @@ class ProductionReportFoldingController extends Controller
 								'date' => date("Y-m-d"),
 								'barcode' => $data_update[0]->barcode_reject,
 								'remarks' => 'From REJECT Posted'
-							]);	
+							]);
 							$responseReject = HistoryStock::create($validatedData);
 						}
 						*/
@@ -2028,16 +2028,30 @@ class ProductionReportFoldingController extends Controller
 	}
 	public function production_entry_report_folding_detail_json($response_id)
 	{
+		// resolve hash once on small table so main query can use index on id_report_sfs
+		$id_report_sfs = DB::table('report_sfs')->whereRaw("sha1(id) = '$response_id'")->value('id');
+		if (!$id_report_sfs) return response()->json(['draw' => 1, 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => []]);
+
 		$query = DB::table('report_sf_production_results AS a')
 			->leftJoin('work_orders AS b', 'a.id_work_orders', '=', 'b.id')
 			->select(
-				'a.id', 'a.start_time', 'a.finish_time',
-				'a.barcode_start', 'a.barcode', 'a.type_result', 'a.note',
-				'a.thickness', 'a.length', 'a.width', 'a.weight',
-				'a.status', 'a.waste', 'a.cause_waste',
+				'a.id',
+				'a.start_time',
+				'a.finish_time',
+				'a.barcode_start',
+				'a.barcode',
+				'a.type_result',
+				'a.note',
+				'a.thickness',
+				'a.length',
+				'a.width',
+				'a.weight',
+				'a.status',
+				'a.waste',
+				'a.cause_waste',
 				'b.wo_number'
 			)
-			->whereRaw("sha1(a.id_report_sfs) = '$response_id'")
+			->where('a.id_report_sfs', $id_report_sfs)
 			->orderBy('a.id', 'asc');
 
 		return DataTables::of($query)

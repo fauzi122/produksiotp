@@ -160,7 +160,7 @@
 													alert(xhr.status + "\n" + xhr.responseText + "\n" + thrownError);
 												}
 											});
-											
+
 											$.ajax({
 												type: "GET",
 												url: "/json_get_customer",
@@ -180,7 +180,7 @@
 													alert(xhr.status + "\n" + xhr.responseText + "\n" + thrownError);
 												}
 											});
-										
+
 											$.ajax({
 												type: "GET",
 												url: "/json_get_work_center",
@@ -198,7 +198,7 @@
 													alert(xhr.status + "\n" + xhr.responseText + "\n" + thrownError);
 												}
 											});
-											
+
 											$.ajax({
 												type: "GET",
 												url: "/json_get_regu",
@@ -217,8 +217,8 @@
 													alert(xhr.status + "\n" + xhr.responseText + "\n" + thrownError);
 												}
 											});
-											
-											$("#id_master_work_centers").change(function(){										
+
+											$("#id_master_work_centers").change(function(){
 												$.ajax({
 													type: "GET",
 													url: "/json_get_regu",
@@ -238,11 +238,11 @@
 													}
 												});
 											});
-											
-											$("#id_master_regus").change(function(){	
+
+											$("#id_master_regus").change(function(){
 												$('#shift').prop('selectedIndex', 0);
 											});
-											
+
 										});
 									</script>
 									<div class="row mb-4 field-wrapper">
@@ -667,9 +667,9 @@
 									<div class="card-header">
 										<h4 class="card-title">Form</h4>
 									</div>
-									<?php 
+									<?php
 										$last = collect($data_detail_production)->last();
-										
+
 										$start = !empty($last) ? $last->start_time : '07:30' ;
 										$finish = !empty($last) ? $last->finish_time : '07:30' ;
 									?>
@@ -797,7 +797,7 @@
 															return item.text;
 														}
 													});
-													
+
 													@if(!empty($last) && !empty($ms_work_orders->first()))
 														setTimeout(function() {
 															$('#id_work_orders').trigger('change');
@@ -811,7 +811,7 @@
 														$.ajax({
 															type: "GET",
 															url: "/json_get_produk_folding",
-															data: { type_product : $('#id_work_orders option:selected').attr('data-type_product'), id_master_products : $('#id_work_orders option:selected').attr('data-id_master_products') },															
+															data: { type_product : $('#id_work_orders option:selected').attr('data-type_product'), id_master_products : $('#id_work_orders option:selected').attr('data-id_master_products') },
 															dataType: "json",
 															beforeSend: function(e) {
 																if(e && e.overrideMimeType) {
@@ -838,7 +838,7 @@
 															success: function(response){
 																//$("#id_master_products_detail").html(response.list_products).show();
 																document.getElementById("thickness").value = response.result[0]['thickness'];
-																
+
 																document.getElementById("width").value = response.result[0]['width'];
 																document.getElementById("width_unit").textContent = response.result[0]['width_unit_code'];
 																if($('#id_work_orders option:selected').attr('data-type_product')=='FG'){
@@ -847,7 +847,7 @@
 																	document.getElementById("length").value = response.result[0]['length'];
 																}
 																document.getElementById("length_unit").textContent = response.result[0]['length_unit_code'];
-																
+
 																document.getElementById("weight").value = response.result[0]['weight'];
 															},
 															error: function (xhr, ajaxOptions, thrownError) {
@@ -855,13 +855,13 @@
 															}
 														});
 													<?php }; ?>
-													
-													$("#id_work_orders").change(function(){		
-														
+
+													$("#id_work_orders").change(function(){
+
 														$.ajax({
 															type: "GET",
 															url: "/json_get_produk_folding",
-															data: { type_product : $('#id_work_orders option:selected').attr('data-type_product'), id_master_products : $('#id_work_orders option:selected').attr('data-id_master_products') },															
+															data: { type_product : $('#id_work_orders option:selected').attr('data-type_product'), id_master_products : $('#id_work_orders option:selected').attr('data-id_master_products') },
 															dataType: "json",
 															beforeSend: function(e) {
 																if(e && e.overrideMimeType) {
@@ -888,7 +888,7 @@
 															success: function(response){
 																//$("#id_master_products_detail").html(response.list_products).show();
 																document.getElementById("thickness").value = response.result[0]['thickness'];
-																
+
 																document.getElementById("width").value = response.result[0]['width'];
 																document.getElementById("width_unit").textContent = response.result[0]['width_unit_code'];
 																if($('#id_work_orders option:selected').attr('data-type_product')=='FG'){
@@ -897,7 +897,7 @@
 																	document.getElementById("length").value = response.result[0]['length'];
 																}
 																document.getElementById("length_unit").textContent = response.result[0]['length_unit_code'];
-																
+
 																document.getElementById("weight").value = response.result[0]['weight'];
 															},
 															error: function (xhr, ajaxOptions, thrownError) {
@@ -905,7 +905,7 @@
 															}
 														});
 													});
-													
+
 												});
 											</script>
 											<div class="row mb-4 field-wrapper">
@@ -1132,7 +1132,7 @@
 														},
 														minimumInputLength: 0
 													});
-													
+
 													// Initialize Select2 dengan AJAX untuk Barcode End
 													$('#id_master_barcode').select2({
 														placeholder: '** Please Select A Barcodes',
@@ -1164,7 +1164,7 @@
 														},
 														minimumInputLength: 0
 													});
-													
+
 													// Set nilai default untuk Barcode Start dari data terakhir di tabel detail
 													// Only if used_next_shift is '1' (Yes)
 													@if(!empty($data_detail_production) && count($data_detail_production) > 0)

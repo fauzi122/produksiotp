@@ -860,8 +860,8 @@ class ProductionReportBagMakingController extends Controller
 			$data_slitting = DB::table('report_sf_production_results as a')
 				->leftJoin('report_sfs as b', 'a.id_report_sfs', '=', 'b.id')
 				->whereRaw("a.barcode = '$barcode_start'")
-				->select('a.*', 'b.report_number', 'b.order_name')
-				->get();
+				->select('a.id', 'a.id_report_sfs', 'a.note', 'a.weight', 'b.report_number')
+				->first();
 
 			$cek_attempt_barcode_start = DB::table('barcode_detail')
 				->select('*')
@@ -875,7 +875,7 @@ class ProductionReportBagMakingController extends Controller
 			$real_barcode_start = !empty($cek_attempt_barcode_start) ? $cek_attempt_barcode_start->barcode_number : $_POST['id_master_barcode_start'];
 
 			//print_r($data_slitting);exit;
-			$order_name = explode('|', $data_slitting[0]->note);
+			$order_name = explode('|', $data_slitting->note);
 			$amount_result = $_POST['amount_result'];
 			$pcs_wrap = $_POST['pcs_wrap'];
 
@@ -883,7 +883,7 @@ class ProductionReportBagMakingController extends Controller
 				return Redirect::to('/production-ent-report-bag-making-detail/' . $request_id)->with('pesan_danger', 'Barcode Start Tidak Mencukupi');
 			} else {
 
-				if (!empty($data_slitting[0]->id_report_sfs) && $amount_result > 0  && $pcs_wrap > 0) {
+				if (!empty($data_slitting) && !empty($data_slitting->id_report_sfs) && $amount_result > 0  && $pcs_wrap > 0) {
 					$hasil = floor($amount_result / $pcs_wrap);
 					$sisa = $amount_result % $pcs_wrap;
 
@@ -958,9 +958,9 @@ class ProductionReportBagMakingController extends Controller
 						$validatedData['waste'] = $_POST['waste'];
 						$validatedData['cause_waste'] = $_POST['cause_waste'];
 						$validatedData['keterangan'] = $_POST['keterangan'];
-						$validatedData['id_report_bags'] = $data[0]->id;
-						$validatedData['id_report_sfs'] = $data_slitting[0]->id_report_sfs;
-						$validatedData['id_report_sf_production_results'] = $data_slitting[0]->id;
+						$validatedData['id_report_bags'] = $data->id;
+						$validatedData['id_report_sfs'] = $data_slitting->id_report_sfs;
+						$validatedData['id_report_sf_production_results'] = $data_slitting->id;
 						$validatedData['wrap'] = $hasil_akhir;
 
 						if (isset($_POST['used_next_shift'])) {
@@ -979,12 +979,12 @@ class ProductionReportBagMakingController extends Controller
 
 						if (!empty($response)) {
 
-							//UPDATE STATUS BARCODE Versi OLD
-							$updatedData['status'] = 'In Stock BAG'; //pukul rata jenis nya join lagi berdasarkan wo
-
-							DB::table('barcode_detail')
-								->where('barcode_number', $response->barcode)
-								->update($updatedData);
+//UPDATE STATUS BARCODE + used_next_shift barcode END (merged into one UPDATE)
+									$updatedDataBE['status'] = 'In Stock BAG';
+									$updatedDataBE['used_next_shift'] = isset($_POST['used_next_shift_barcode']) ? '1' : '0';
+									DB::table('barcode_detail')
+										->where('barcode_number', $response->barcode)
+										->update($updatedDataBE);
 
 
 							//Update Status Used Next Shift Barcode START
@@ -1012,22 +1012,6 @@ class ProductionReportBagMakingController extends Controller
 									->update($updatedDataBS);
 							}
 
-							//Update Status Used Next Shift Barcode END
-							if (!isset($_POST['used_next_shift_barcode']) || isset($_POST['used_next_shift_barcode'])) {
-								if (!isset($_POST['used_next_shift_barcode'])) {
-									$updatedDataBE['used_next_shift'] = '0';
-								}
-								if (isset($_POST['used_next_shift_barcode'])) {
-									$updatedDataBE['used_next_shift'] = '1';
-								}
-								DB::table('barcode_detail')
-									->where('barcode_number', $response->barcode)
-									->update($updatedDataBE);
-							}
-
-							//INSERT DETAIL RESULT (bulk insert untuk performa)
-							$now = date('Y-m-d H:i:s');
-							$bulk_details = [];
 							for ($i = 0; $i < $hasil; $i++) {
 								$bulk_details[] = [
 									'id_report_bags' => $response->id_report_bags,
@@ -1051,17 +1035,17 @@ class ProductionReportBagMakingController extends Controller
 							}
 
 							//PENGURANGAN STOCK WIP/FG
-							if ($updatedDataBS['used_product'] == 'FG' and $updatedDataBS['used_attempt'] == '50000') {
+if ($updatedDataBS['used_product'] == 'FG' && (int)$updatedDataBS['used_attempt'] >= 50000) {
 
-								if ($updatedDataBS['used_product'] == 'FG' and $updatedDataBS['used_attempt'] == '50000') {
-									//echo "FG";
-									$data_produk = DB::table('master_product_fgs')
-										->select('*')
-										->where('id', $order_name[1])
-										->get();
-									//print_r($data_produk);
-									$updatedDataMS['stock'] = $data_produk[0]->stock - 1;
-									$updatedDataMS['weight_stock'] = $data_produk[0]->weight_stock - $data_slitting[0]->weight; //
+									if ($updatedDataBS['used_product'] == 'FG' && (int)$updatedDataBS['used_attempt'] >= 50000) {
+										//echo "FG";
+										$data_produk = DB::table('master_product_fgs')
+											->select('id', 'stock', 'weight_stock')
+											->where('id', $order_name[1])
+											->first();
+										//print_r($data_produk);
+										$updatedDataMS['stock'] = $data_produk->stock - 1;
+										$updatedDataMS['weight_stock'] = $data_produk->weight_stock - $data_slitting->weight;
 
 									$responseUpdateMaster = DB::table('master_product_fgs')
 										->where('id', $order_name[1])
@@ -1080,13 +1064,13 @@ class ProductionReportBagMakingController extends Controller
 										->get();
 
 									$validatedData = ([
-										'id_good_receipt_notes_details' => $data_slitting[0]->report_number,
+										'id_good_receipt_notes_details' => $data_slitting->report_number,
 										'usage_to' => $data_usage_to[0]->report_number, //hasil nya bisa lebih dari satu report number
 										'type_product' => $order_name[0],
 										'id_master_products' => $order_name[1],
 										'qty' => '1',
 										'type_stock' => 'OUT',
-										'weight' => $data_slitting[0]->weight, //
+										'weight' => $data_slitting->weight, //
 										'date' => date("Y-m-d"),
 										'barcode' => $response->barcode_start,
 										'remarks' => 'From Slitting/Folding (Finish Good) Usage To Bag Making'
@@ -1419,17 +1403,17 @@ class ProductionReportBagMakingController extends Controller
 
 						//Penyesuaian Barcode Start NEW
 						//PENGURANGAN STOK WIP/FG
-						if ($updatedDataBS['used_product'] == 'FG' and $updatedDataBS['used_attempt'] == '50000') {
+if ($updatedDataBS['used_product'] == 'FG' && (int)$updatedDataBS['used_attempt'] >= 50000) {
 
-							if ($updatedDataBS['used_product'] == 'FG' and $updatedDataBS['used_attempt'] == '50000') {
-								//echo "FG";
-								$data_produk = DB::table('master_product_fgs')
-									->select('*')
-									->where('id', $order_name[1])
-									->get();
-								//print_r($data_produk);
-								$updatedDataMS['stock'] = $data_produk[0]->stock - 1;
-								$updatedDataMS['weight_stock'] = $data_produk[0]->weight_stock - $data_slitting[0]->weight;
+										if ($updatedDataBS['used_product'] == 'FG' && (int)$updatedDataBS['used_attempt'] >= 50000) {
+											//echo "FG";
+											$data_produk = DB::table('master_product_fgs')
+												->select('id', 'stock', 'weight_stock')
+												->where('id', $order_name[1])
+												->first();
+											//print_r($data_produk);
+											$updatedDataMS['stock'] = $data_produk->stock - 1;
+											$updatedDataMS['weight_stock'] = $data_produk->weight_stock - $data_slitting->weight;
 
 								$responseUpdateMaster = DB::table('master_product_fgs')
 									->where('id', $order_name[1])
@@ -2427,6 +2411,10 @@ class ProductionReportBagMakingController extends Controller
 	}
 	public function production_entry_report_bag_making_detail_json($response_id)
 	{
+		// resolve hash once on small table so main query can use index on id_report_bags
+		$id_report_bags = DB::table('report_bags')->whereRaw("sha1(id) = '$response_id'")->value('id');
+		if (!$id_report_bags) return response()->json(['draw' => 1, 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => []]);
+
 		$query = DB::table('report_bag_production_results AS a')
 			->leftJoin('work_orders AS b', 'a.id_work_orders', '=', 'b.id')
 			->leftJoin('report_bag_production_result_details AS c', function ($join) {
@@ -2436,16 +2424,25 @@ class ProductionReportBagMakingController extends Controller
 			})
 			->leftJoin('barcode_detail as e', 'a.barcode', '=', 'e.barcode_number')
 			->select(
-				'a.id', 'a.start_time', 'a.finish_time',
-				'a.barcode_start', 'a.barcode', 'a.note',
-				'a.weight_starting', 'a.waste', 'a.amount_result', 'a.wrap', 'a.keterangan',
-				'a.id_work_orders', 'a.id_report_bags',
+				'a.id',
+				'a.start_time',
+				'a.finish_time',
+				'a.barcode_start',
+				'a.barcode',
+				'a.note',
+				'a.weight_starting',
+				'a.waste',
+				'a.amount_result',
+				'a.wrap',
+				'a.keterangan',
+				'a.id_work_orders',
+				'a.id_report_bags',
 				'b.wo_number'
 			)
 			->selectRaw('e.used_next_shift AS used_next_shift_barcode')
 			->selectRaw('COUNT(c.wrap_pcs) AS count_detail_pr')
 			->selectRaw('SUM(c.wrap_pcs) AS sum_wrap_pcs_pr')
-			->whereRaw("sha1(a.id_report_bags) = '$response_id'")
+			->where('a.id_report_bags', $id_report_bags)
 			->groupBy('a.id')
 			->orderBy('a.id', 'asc');
 
