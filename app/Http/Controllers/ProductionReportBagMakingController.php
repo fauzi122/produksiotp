@@ -915,8 +915,8 @@ class ProductionReportBagMakingController extends Controller
 					if ($hasil_akhir > 0) {
 						$data = ProductionEntryReportBagMaking::whereRaw("sha1(report_bags.id) = '$request_id'")
 							->select('id')
-							->get();
-						//print_r($data[0]);exit;
+							->first();
+						//print_r($data);exit;
 						$pesan = [
 							'id_work_orders.required' => 'Cannot Be Empty',
 							'start.required' => 'Cannot Be Empty',
@@ -979,12 +979,12 @@ class ProductionReportBagMakingController extends Controller
 
 						if (!empty($response)) {
 
-//UPDATE STATUS BARCODE + used_next_shift barcode END (merged into one UPDATE)
-									$updatedDataBE['status'] = 'In Stock BAG';
-									$updatedDataBE['used_next_shift'] = isset($_POST['used_next_shift_barcode']) ? '1' : '0';
-									DB::table('barcode_detail')
-										->where('barcode_number', $response->barcode)
-										->update($updatedDataBE);
+							//UPDATE STATUS BARCODE + used_next_shift barcode END (merged into one UPDATE)
+							$updatedDataBE['status'] = 'In Stock BAG';
+							$updatedDataBE['used_next_shift'] = isset($_POST['used_next_shift_barcode']) ? '1' : '0';
+							DB::table('barcode_detail')
+								->where('barcode_number', $response->barcode)
+								->update($updatedDataBE);
 
 
 							//Update Status Used Next Shift Barcode START
@@ -1035,17 +1035,17 @@ class ProductionReportBagMakingController extends Controller
 							}
 
 							//PENGURANGAN STOCK WIP/FG
-if ($updatedDataBS['used_product'] == 'FG' && (int)$updatedDataBS['used_attempt'] >= 50000) {
+							if ($updatedDataBS['used_product'] == 'FG' && (int)$updatedDataBS['used_attempt'] >= 50000) {
 
-									if ($updatedDataBS['used_product'] == 'FG' && (int)$updatedDataBS['used_attempt'] >= 50000) {
-										//echo "FG";
-										$data_produk = DB::table('master_product_fgs')
-											->select('id', 'stock', 'weight_stock')
-											->where('id', $order_name[1])
-											->first();
-										//print_r($data_produk);
-										$updatedDataMS['stock'] = $data_produk->stock - 1;
-										$updatedDataMS['weight_stock'] = $data_produk->weight_stock - $data_slitting->weight;
+								if ($updatedDataBS['used_product'] == 'FG' && (int)$updatedDataBS['used_attempt'] >= 50000) {
+									//echo "FG";
+									$data_produk = DB::table('master_product_fgs')
+										->select('id', 'stock', 'weight_stock')
+										->where('id', $order_name[1])
+										->first();
+									//print_r($data_produk);
+									$updatedDataMS['stock'] = $data_produk->stock - 1;
+									$updatedDataMS['weight_stock'] = $data_produk->weight_stock - $data_slitting->weight;
 
 									$responseUpdateMaster = DB::table('master_product_fgs')
 										->where('id', $order_name[1])
@@ -1403,17 +1403,17 @@ if ($updatedDataBS['used_product'] == 'FG' && (int)$updatedDataBS['used_attempt'
 
 						//Penyesuaian Barcode Start NEW
 						//PENGURANGAN STOK WIP/FG
-if ($updatedDataBS['used_product'] == 'FG' && (int)$updatedDataBS['used_attempt'] >= 50000) {
+						if ($updatedDataBS['used_product'] == 'FG' && (int)$updatedDataBS['used_attempt'] >= 50000) {
 
-										if ($updatedDataBS['used_product'] == 'FG' && (int)$updatedDataBS['used_attempt'] >= 50000) {
-											//echo "FG";
-											$data_produk = DB::table('master_product_fgs')
-												->select('id', 'stock', 'weight_stock')
-												->where('id', $order_name[1])
-												->first();
-											//print_r($data_produk);
-											$updatedDataMS['stock'] = $data_produk->stock - 1;
-											$updatedDataMS['weight_stock'] = $data_produk->weight_stock - $data_slitting->weight;
+							if ($updatedDataBS['used_product'] == 'FG' && (int)$updatedDataBS['used_attempt'] >= 50000) {
+								//echo "FG";
+								$data_produk = DB::table('master_product_fgs')
+									->select('id', 'stock', 'weight_stock')
+									->where('id', $order_name[1])
+									->first();
+								//print_r($data_produk);
+								$updatedDataMS['stock'] = $data_produk->stock - 1;
+								$updatedDataMS['weight_stock'] = $data_produk->weight_stock - $data_slitting->weight;
 
 								$responseUpdateMaster = DB::table('master_product_fgs')
 									->where('id', $order_name[1])
