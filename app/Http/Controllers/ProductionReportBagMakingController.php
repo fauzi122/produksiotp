@@ -1012,27 +1012,30 @@ class ProductionReportBagMakingController extends Controller
 									->update($updatedDataBS);
 							}
 
-							for ($i = 0; $i < $hasil; $i++) {
-								$bulk_details[] = [
-									'id_report_bags' => $response->id_report_bags,
-									'id_report_bag_production_results' => $response->id,
-									'wrap_pcs' => $pcs_wrap,
-									'created_at' => $now,
-									'updated_at' => $now,
-								];
-							}
-							if ($sisa > 0) {
-								$bulk_details[] = [
-									'id_report_bags' => $response->id_report_bags,
-									'id_report_bag_production_results' => $response->id,
-									'wrap_pcs' => $sisa,
-									'created_at' => $now,
-									'updated_at' => $now,
-								];
-							}
-							if (!empty($bulk_details)) {
-								DB::table('report_bag_production_result_details')->insert($bulk_details);
-							}
+							//INSERT DETAIL RESULT (bulk insert)
+						$now = date('Y-m-d H:i:s');
+						$bulk_details = [];
+						for ($i = 0; $i < $hasil; $i++) {
+							$bulk_details[] = [
+								'id_report_bags' => $response->id_report_bags,
+								'id_report_bag_production_results' => $response->id,
+								'wrap_pcs' => $pcs_wrap,
+								'created_at' => $now,
+								'updated_at' => $now,
+							];
+						}
+						if ($sisa > 0) {
+							$bulk_details[] = [
+								'id_report_bags' => $response->id_report_bags,
+								'id_report_bag_production_results' => $response->id,
+								'wrap_pcs' => $sisa,
+								'created_at' => $now,
+								'updated_at' => $now,
+							];
+						}
+						if (!empty($bulk_details)) {
+							DB::table('report_bag_production_result_details')->insert($bulk_details);
+						}
 
 							//PENGURANGAN STOCK WIP/FG
 							if ($updatedDataBS['used_product'] == 'FG' && (int)$updatedDataBS['used_attempt'] >= 50000) {
